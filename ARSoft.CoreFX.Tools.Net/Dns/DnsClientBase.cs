@@ -561,14 +561,15 @@ namespace ARSoft.Tools.Net.Dns
 				{
 					using (UdpClient udpClient = new UdpClient(endpointInfo.LocalAddress.AddressFamily))
 					{
-						udpClient.Connect(endpointInfo.ServerAddress, _port);
+                        udpClient.Connect(endpointInfo.ServerAddress, _port);
 
 						udpClient.Client.SendTimeout = QueryTimeout;
 						udpClient.Client.ReceiveTimeout = QueryTimeout;
 
-						await udpClient.SendAsync(messageData, messageLength);
+                        IPEndPoint serverEndpoint = new IPEndPoint(endpointInfo.ServerAddress, _port);
+                        await udpClient.SendAsync(messageData, messageLength, serverEndpoint);
 
-						UdpReceiveResult response = await udpClient.ReceiveAsync(QueryTimeout, token);
+                        UdpReceiveResult response = await udpClient.ReceiveAsync(QueryTimeout, token);
 						return new QueryResponse(response.Buffer, response.RemoteEndPoint.Address);
 					}
 				}

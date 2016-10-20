@@ -227,6 +227,7 @@
     <Compile Include="Spf\ValidationResult.cs" />
     <Compile Include="Spf\ValidatorBase.cs" />
     <Compile Include="TcpClientExtensions.cs" />
+    <Compile Include="Test\TestEnv.cs" />
     <Compile Include="UdpClientExtensions.cs" />
   </ItemGroup>
   <ItemGroup>

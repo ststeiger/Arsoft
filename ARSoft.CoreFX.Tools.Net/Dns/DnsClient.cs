@@ -258,10 +258,10 @@ namespace ARSoft.Tools.Net.Dns
 			{
 				Trace.TraceError("Configured nameserver couldn't be determined: " + e);
 			}
-
             
+
 			// try parsing resolv.conf since getting data by NetworkInterface is not supported on non-windows mono
-			if ((res.Count == 0) && ((Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX)))
+			if ((res.Count == 0) && (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)))
 			{
 				try
 				{

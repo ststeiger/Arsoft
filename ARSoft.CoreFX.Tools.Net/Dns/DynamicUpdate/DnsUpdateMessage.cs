@@ -119,8 +119,10 @@ namespace ARSoft.Tools.Net.Dns.DynamicUpdate
 			AuthorityRecords = Updates?.Cast<DnsRecordBase>().ToList() ?? new List<DnsRecordBase>();
 		}
 
-		protected override void FinishParsing()
+
+        protected override void FinishParsing()
 		{
+            /*
 			Prequisites =
 				AnswerRecords.ConvertAll<PrequisiteBase>(
 					record =>
@@ -150,8 +152,37 @@ namespace ARSoft.Tools.Net.Dns.DynamicUpdate
 							return null;
 						}
 					}).Where(prequisite => (prequisite != null)).ToList();
+            */
 
-			Updates =
+            Prequisites = AnswerRecords.Select(record => {
+                PrequisiteBase ret = null;
+
+                if ((record.RecordClass == RecordClass.Any) && (record.RecordDataLength == 0))
+                {
+                    ret = new RecordExistsPrequisite(record.Name, record.RecordType);
+                }
+                else if (record.RecordClass == RecordClass.Any)
+                {
+                    ret = new RecordExistsPrequisite(record);
+                }
+                else if ((record.RecordClass == RecordClass.None) && (record.RecordDataLength == 0))
+                {
+                    ret = new RecordNotExistsPrequisite(record.Name, record.RecordType);
+                }
+                else if ((record.RecordClass == RecordClass.Any) && (record.RecordType == RecordType.Any))
+                {
+                    ret = new NameIsInUsePrequisite(record.Name);
+                }
+                else if ((record.RecordClass == RecordClass.None) && (record.RecordType == RecordType.Any))
+                {
+                    ret = new NameIsNotInUsePrequisite(record.Name);
+                }
+
+                return ret;
+            }).Where(prequisite => (prequisite != null)).ToList();
+
+            /*
+            Updates =
 				AuthorityRecords.ConvertAll<UpdateBase>(
 					record =>
 					{
@@ -176,6 +207,35 @@ namespace ARSoft.Tools.Net.Dns.DynamicUpdate
 							return null;
 						}
 					}).Where(update => (update != null)).ToList();
-		}
-	}
+            */
+
+            Updates = AnswerRecords.Select(record => {
+               UpdateBase ret = null;
+
+               if (record.TimeToLive != 0)
+               {
+                   ret = new AddRecordUpdate(record);
+               }
+               else if ((record.RecordType == RecordType.Any) && (record.RecordClass == RecordClass.Any) && (record.RecordDataLength == 0))
+               {
+                   ret = new DeleteAllRecordsUpdate(record.Name);
+               }
+               else if ((record.RecordClass == RecordClass.Any) && (record.RecordDataLength == 0))
+               {
+                   ret = new DeleteRecordUpdate(record.Name, record.RecordType);
+               }
+               else if (record.RecordClass == RecordClass.None)
+               {
+                   ret = new DeleteRecordUpdate(record);
+               }
+               else
+               {
+                   ret = null;
+               }
+
+               return ret;
+           }).Where(update => (update != null)).ToList();
+
+        }
+    }
 }
