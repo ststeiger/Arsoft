@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ARSoft.Tools.Net", "ARSoft.Tools.Net\ARSoft.Tools.Net.csproj", "{65BFA748-C640-49B0-B506-34BBB165233A}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ARSoft.CoreFX.Tools.Net", "ARSoft.CoreFX.Tools.Net\ARSoft.CoreFX.Tools.Net.xproj", "{9C3C1C83-31B8-415C-BB60-EDEEEF2834EF}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BouncyCastle", "BouncyCastle\BouncyCastle.xproj", "{20DB2560-4C69-4581-B66F-4E425A7420F0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{65BFA748-C640-49B0-B506-34BBB165233A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65BFA748-C640-49B0-B506-34BBB165233A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65BFA748-C640-49B0-B506-34BBB165233A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65BFA748-C640-49B0-B506-34BBB165233A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C3C1C83-31B8-415C-BB60-EDEEEF2834EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C3C1C83-31B8-415C-BB60-EDEEEF2834EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C3C1C83-31B8-415C-BB60-EDEEEF2834EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C3C1C83-31B8-415C-BB60-EDEEEF2834EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20DB2560-4C69-4581-B66F-4E425A7420F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20DB2560-4C69-4581-B66F-4E425A7420F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20DB2560-4C69-4581-B66F-4E425A7420F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20DB2560-4C69-4581-B66F-4E425A7420F0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

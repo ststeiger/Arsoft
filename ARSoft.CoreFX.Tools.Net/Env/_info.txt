@@ -1,0 +1,5 @@
+﻿System.Net.NameResolution 
+==> System.Net.Dns.GetHostName();
+System.Net.NetworkInformation
+
+https://github.com/mono/mono/blob/master/mcs/class/corlib/System/Environment.cs
