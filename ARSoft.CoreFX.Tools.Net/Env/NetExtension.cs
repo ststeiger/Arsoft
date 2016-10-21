@@ -10,12 +10,13 @@ namespace System
 
     public sealed class DotNetUtilities
     {
-        public static Org.BouncyCastle.X509.X509Certificate FromX509Certificate(System.Security.Cryptography.X509Certificates.X509Certificate x509Cert)
+
+        // https://stackoverflow.com/questions/1182612/what-is-the-difference-between-x509certificate2-and-x509certificate-in-net
+        public static Org.BouncyCastle.X509.X509Certificate FromX509Certificate(System.Security.Cryptography.X509Certificates.X509Certificate2 x509Cert)
         {
             // https://stackoverflow.com/questions/8136651/how-can-i-convert-a-bouncycastle-x509certificate-to-an-x509certificate2
-            Org.BouncyCastle.X509.X509Certificate mycer = null;
-            
-            return null;
+            // https://stackoverflow.com/questions/1182612/what-is-the-difference-between-x509certificate2-and-x509certificate-in-net
+            return new Org.BouncyCastle.X509.X509CertificateParser().ReadCertificate(x509Cert.GetRawCertData());
         }
 
     }
@@ -24,7 +25,7 @@ namespace System
     public static class NetExtension
     {
 
-
+        // https://msdn.microsoft.com/en-us/library/hh873178(v=vs.110).aspx
         public static IAsyncResult AsApm(this Task task,
                                    AsyncCallback callback,
                                    object state)
@@ -40,7 +41,7 @@ namespace System
                     tcs.TrySetException(t.Exception.InnerExceptions);
                 else if (t.IsCanceled)
                     tcs.TrySetCanceled();
-                 else tcs.TrySetResult(true);
+                else tcs.TrySetResult(true);
 
                 if (callback != null)
                     callback(tcs.Task);
@@ -90,7 +91,7 @@ namespace System
 
 
         // public static byte[] GetRawCertData(this Org.BouncyCastle.X509.X509Certificate cert)
-        public static byte[] GetRawCertData(this System.Security.Cryptography.X509Certificates.X509Certificate cert)
+        public static byte[] GetRawCertData(this System.Security.Cryptography.X509Certificates.X509Certificate2 cert)
         {
             // https://stackoverflow.com/questions/1182612/what-is-the-difference-between-x509certificate2-and-x509certificate-in-net
             System.Security.Cryptography.X509Certificates.X509Certificate2 cert2 = (System.Security.Cryptography.X509Certificates.X509Certificate2)cert;
@@ -115,18 +116,18 @@ namespace System
             return tcpClient.ConnectAsync(address, port).AsApm(requestCallback, state);
         }
 
-        
+
         public static bool EndConnect(this TcpClient tcpClient, IAsyncResult asyncResult)
         {
             return ((Task<bool>)asyncResult).Result;
         }
         
 
-
         public static bool WaitOne(this System.Threading.WaitHandle wh, TimeSpan timeout, bool exitContext)
         {
             return wh.WaitOne(timeout);
         }
+
 
         public static void Close(this UdpClient udpClient)
         {
@@ -141,6 +142,8 @@ namespace System
         public static void Close(this System.Threading.WaitHandle handle)
         {
         }
+
+
     }
 
 

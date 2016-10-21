@@ -74,7 +74,7 @@ namespace ARSoft.Tools.Net.Net
 
 					foreach (var tlsaRecord in _tlsaRecords.Records)
 					{
-						if (ValidateCertificateByTlsa(tlsaRecord, certificate, chain, sslPolicyErrors))
+						if (ValidateCertificateByTlsa(tlsaRecord, (X509Certificate2)certificate, chain, sslPolicyErrors))
 						{
 							IsAuthenticatedByDane = true;
 							return true;
@@ -91,7 +91,7 @@ namespace ARSoft.Tools.Net.Net
 			}
 		}
 
-		private bool ValidateCertificateByTlsa(TlsaRecord tlsaRecord, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+		private bool ValidateCertificateByTlsa(TlsaRecord tlsaRecord, X509Certificate2 certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
 		{
 			switch (tlsaRecord.CertificateUsage)
 			{
@@ -112,7 +112,7 @@ namespace ARSoft.Tools.Net.Net
 			}
 		}
 
-		private bool ValidateCertificateByTlsa(TlsaRecord tlsaRecord, X509Certificate certificate)
+		private bool ValidateCertificateByTlsa(TlsaRecord tlsaRecord, X509Certificate2 certificate)
 		{
 			return TlsaRecord.GetCertificateAssocicationData(tlsaRecord.Selector, tlsaRecord.MatchingType, certificate).SequenceEqual(tlsaRecord.CertificateAssociationData);
 		}

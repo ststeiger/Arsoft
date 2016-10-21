@@ -24,6 +24,7 @@ using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ARSoft.Tools.Net.Dns
 {
@@ -210,7 +211,7 @@ namespace ARSoft.Tools.Net.Dns
 		/// <param name="selector">The selector</param>
 		/// <param name="matchingType">The matching type</param>
 		/// <param name="certificate">The certificate to get the association data from</param>
-		public TlsaRecord(DomainName name, int timeToLive, TlsaCertificateUsage certificateUsage, TlsaSelector selector, TlsaMatchingType matchingType, X509Certificate certificate)
+		public TlsaRecord(DomainName name, int timeToLive, TlsaCertificateUsage certificateUsage, TlsaSelector selector, TlsaMatchingType matchingType, X509Certificate2 certificate)
 			: base(name, RecordType.Tlsa, RecordClass.INet, timeToLive)
 		{
 			CertificateUsage = certificateUsage;
@@ -219,7 +220,7 @@ namespace ARSoft.Tools.Net.Dns
 			CertificateAssociationData = GetCertificateAssocicationData(selector, matchingType, certificate);
 		}
 
-		internal static byte[] GetCertificateAssocicationData(TlsaSelector selector, TlsaMatchingType matchingType, X509Certificate certificate)
+		internal static byte[] GetCertificateAssocicationData(TlsaSelector selector, TlsaMatchingType matchingType, X509Certificate2 certificate)
 		{
 			byte[] selectedBytes;
 			switch (selector)
