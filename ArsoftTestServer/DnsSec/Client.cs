@@ -1,0 +1,99 @@
+﻿using ARSoft.Tools.Net;
+using ARSoft.Tools.Net.Dns;
+using ARSoft.Tools.Net.Dns.DynamicUpdate;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+
+namespace ArsoftTestServer
+{
+
+
+    public class Client
+    {
+
+        // Get addresses for a domain name(IPv4)
+        public static void Test1()
+        {
+            DnsMessage dnsMessage = DnsClient.Default.Resolve(DomainName.Parse("www.example.com"), RecordType.A);
+            if ((dnsMessage == null) || ((dnsMessage.ReturnCode != ReturnCode.NoError) && (dnsMessage.ReturnCode != ReturnCode.NxDomain)))
+            {
+                throw new Exception("DNS request failed");
+            }
+            else
+            {
+                foreach (DnsRecordBase dnsRecord in dnsMessage.AnswerRecords)
+                {
+                    ARecord aRecord = dnsRecord as ARecord;
+                    if (aRecord != null)
+                    {
+                        Console.WriteLine(aRecord.Address.ToString());
+                    }
+                }
+            }
+        }
+
+        // Get mail exchangers for a domain name
+        public static void Test2()
+        {
+            DnsMessage dnsMessage = DnsClient.Default.Resolve(DomainName.Parse("example.com"), RecordType.Mx);
+            if ((dnsMessage == null) || ((dnsMessage.ReturnCode != ReturnCode.NoError) && (dnsMessage.ReturnCode != ReturnCode.NxDomain)))
+            {
+                throw new Exception("DNS request failed");
+            }
+            else
+            {
+                foreach (DnsRecordBase dnsRecord in dnsMessage.AnswerRecords)
+                {
+                    MxRecord mxRecord = dnsRecord as MxRecord;
+                    if (mxRecord != null)
+                    {
+                        Console.WriteLine(mxRecord.ExchangeDomainName);
+                    }
+                }
+            }
+        }
+
+
+        // Get reverse lookup adress for an ip address
+        public static void Test3()
+        {
+            DnsMessage dnsMessage = DnsClient.Default.Resolve(IPAddress.Parse("192.0.2.1").GetReverseLookupDomain(), RecordType.Ptr);
+            if ((dnsMessage == null) || ((dnsMessage.ReturnCode != ReturnCode.NoError) && (dnsMessage.ReturnCode != ReturnCode.NxDomain)))
+            {
+                throw new Exception("DNS request failed");
+            }
+            else
+            {
+                foreach (DnsRecordBase dnsRecord in dnsMessage.AnswerRecords)
+                {
+                    PtrRecord ptrRecord = dnsRecord as PtrRecord;
+                    if (ptrRecord != null)
+                    {
+                        Console.WriteLine(ptrRecord.PointerDomainName);
+                    }
+                }
+            }
+        }
+
+
+        // Send dynamic update
+        public static void Test4()
+        {
+            DnsUpdateMessage msg = new DnsUpdateMessage()
+            {
+                ZoneName = DomainName.Parse("example.com")
+            };
+
+msg.Updates.Add(new DeleteRecordUpdate(DomainName.Parse("dyn.example.com"), RecordType.A));
+            msg.Updates.Add(new AddRecordUpdate(new ARecord(DomainName.Parse("dyn.example.com"), 300, IPAddress.Parse("192.0.2.42"))));
+            msg.TSigOptions = new TSigRecord(DomainName.Parse("my-key"), TSigAlgorithm.Md5, DateTime.Now, new TimeSpan(0, 5, 0), msg.TransactionID, ReturnCode.NoError, null, Convert.FromBase64String("0jnu3SdsMvzzlmTDPYRceA=="));
+
+            DnsUpdateMessage dnsResult = new DnsClient(IPAddress.Parse("192.0.2.1"), 5000).SendUpdate(msg);
+        }
+
+
+    }
+}
