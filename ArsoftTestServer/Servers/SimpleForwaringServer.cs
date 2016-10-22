@@ -23,14 +23,14 @@ namespace ArsoftTestServer
 
                 Console.WriteLine("Press any key to stop server");
                 Console.ReadLine();
-            }
-        }
+            } // End Using server 
+
+        } // End Sub Test 
 
 
         static async Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
         {
             DnsMessage message = e.Query as DnsMessage;
-
 
             if (message == null)
                 return;
@@ -49,19 +49,25 @@ namespace ArsoftTestServer
                     foreach (DnsRecordBase record in (upstreamResponse.AnswerRecords))
                     {
                         response.AnswerRecords.Add(record);
-                    }
+                    } // Next record 
+
                     foreach (DnsRecordBase record in (upstreamResponse.AdditionalRecords))
                     {
                         response.AdditionalRecords.Add(record);
-                    }
+                    } // Next record 
 
                     response.ReturnCode = ReturnCode.NoError;
 
                     // set the response
                     e.Response = response;
-                }
-            }
-        }
-    }
+                } // End if (upstreamResponse != null) 
 
-} // End Namespace 
+            } // End if ((message.Questions.Count == 1)) 
+
+        } // End Function OnQueryReceived 
+
+
+    } // End Class SimpleForwaringServer 
+
+
+} // End Namespace ArsoftTestServer 

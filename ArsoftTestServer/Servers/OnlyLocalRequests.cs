@@ -1,7 +1,7 @@
 ﻿
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -25,18 +25,25 @@ namespace ArsoftTestServer
 
                 Console.WriteLine("Press any key to stop server");
                 Console.ReadLine();
-            }
-        }
+            } // End Using server 
+
+        } // End Sub Test 
+
 
         static async Task OnClientConnected(object sender, ClientConnectedEventArgs e)
         {
             if (!IPAddress.IsLoopback(e.RemoteEndpoint.Address))
                 e.RefuseConnect = true;
-        }
+        } // End Function OnClientConnected 
+
 
         static async Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
         {
             // process query as you like
-        }
-    }
-}
+        } // End Function OnQueryReceived 
+
+
+    } // End Class OnlyLocalRequestsServer 
+
+
+} // End Namespace ArsoftTestServer 

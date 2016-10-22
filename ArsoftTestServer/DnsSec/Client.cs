@@ -1,11 +1,14 @@
-﻿using ARSoft.Tools.Net;
-using ARSoft.Tools.Net.Dns;
-using ARSoft.Tools.Net.Dns.DynamicUpdate;
+﻿
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+
+using ARSoft.Tools.Net;
+using ARSoft.Tools.Net.Dns;
+using ARSoft.Tools.Net.Dns.DynamicUpdate;
+
 
 namespace ArsoftTestServer
 {
@@ -33,7 +36,8 @@ namespace ArsoftTestServer
                     }
                 }
             }
-        }
+
+        } // End Sub Test2 
 
         // Get mail exchangers for a domain name
         public static void Test2()
@@ -54,7 +58,7 @@ namespace ArsoftTestServer
                     }
                 }
             }
-        }
+        } // End Sub Test2 
 
 
         // Get reverse lookup adress for an ip address
@@ -76,7 +80,7 @@ namespace ArsoftTestServer
                     }
                 }
             }
-        }
+        } // End Sub Test3 
 
 
         // Send dynamic update
@@ -92,8 +96,10 @@ msg.Updates.Add(new DeleteRecordUpdate(DomainName.Parse("dyn.example.com"), Reco
             msg.TSigOptions = new TSigRecord(DomainName.Parse("my-key"), TSigAlgorithm.Md5, DateTime.Now, new TimeSpan(0, 5, 0), msg.TransactionID, ReturnCode.NoError, null, Convert.FromBase64String("0jnu3SdsMvzzlmTDPYRceA=="));
 
             DnsUpdateMessage dnsResult = new DnsClient(IPAddress.Parse("192.0.2.1"), 5000).SendUpdate(msg);
-        }
+        } // End Sub Test4 
 
 
-    }
-}
+    } // End Class Client 
+
+
+} // End Namespace ArsoftTestServer 

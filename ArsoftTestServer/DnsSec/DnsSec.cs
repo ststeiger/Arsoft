@@ -1,15 +1,21 @@
-﻿using ARSoft.Tools.Net.Dns;
-using ARSoft.Tools.Net.Net;
+﻿
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
+using ARSoft.Tools.Net.Dns;
+using ARSoft.Tools.Net.Net;
+
+
 namespace ArsoftTestServer
 {
+
+
     public class DnsSec
     {
+
 
         public static void Test1()
         {
@@ -24,7 +30,7 @@ namespace ArsoftTestServer
             {
                 Console.WriteLine("example.com has no signed SSH fingerprint records");
             }
-        }
+        } // End Sub Test1 
 
 
         // https://stackoverflow.com/questions/28612289/tcpclient-connectasync-or-socket-beginconnect-with-non-blocking-timeout-setting
@@ -46,12 +52,14 @@ namespace ArsoftTestServer
                         Console.WriteLine("Stream is authenticated by DANE/TLSA");
 
                     // work with the stream
-                }
-            }
-        }
+                } // End Using stream 
+
+            } // End Using client 
+
+        } // End Sub Test2 
 
 
-    }
+    } // End Class DnsSec 
 
 
-}
+} // End Namespace ArsoftTestServer 
