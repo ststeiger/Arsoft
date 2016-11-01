@@ -46,14 +46,12 @@ namespace Org.BouncyCastle.Security
 			return new X509CertificateParser().ReadCertificate(x509Cert.GetRawCertData());
 		}
 
-		public static AsymmetricCipherKeyPair GetDsaKeyPair(
-			DSA dsa)
+		public static AsymmetricCipherKeyPair GetDsaKeyPair(DSA dsa)
 		{
 			return GetDsaKeyPair(dsa.ExportParameters(true));
 		}
 
-		public static AsymmetricCipherKeyPair GetDsaKeyPair(
-			DSAParameters dp)
+		public static AsymmetricCipherKeyPair GetDsaKeyPair(DSAParameters dp)
 		{
 			DsaValidationParameters validationParameters = (dp.Seed != null)
 				?	new DsaValidationParameters(dp.Seed, dp.Counter)
@@ -76,14 +74,12 @@ namespace Org.BouncyCastle.Security
 			return new AsymmetricCipherKeyPair(pubKey, privKey);
 		}
 
-		public static DsaPublicKeyParameters GetDsaPublicKey(
-			DSA dsa)
+		public static DsaPublicKeyParameters GetDsaPublicKey(DSA dsa)
 		{
 			return GetDsaPublicKey(dsa.ExportParameters(false));
 		}
 
-		public static DsaPublicKeyParameters GetDsaPublicKey(
-			DSAParameters dp)
+		public static DsaPublicKeyParameters GetDsaPublicKey(DSAParameters dp)
 		{
 			DsaValidationParameters validationParameters = (dp.Seed != null)
 				?	new DsaValidationParameters(dp.Seed, dp.Counter)

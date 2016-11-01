@@ -3,8 +3,9 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 
-using ARSoft.Tools.Net.Dns;
 
+using ARSoft.Tools.Net;
+using ARSoft.Tools.Net.Dns;
 
 namespace ArsoftTestServer
 {
@@ -36,6 +37,7 @@ namespace ArsoftTestServer
                 return;
 
             DnsMessage response = message.CreateResponseInstance();
+
 
             if ((message.Questions.Count == 1))
             {

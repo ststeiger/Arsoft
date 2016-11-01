@@ -1,7 +1,10 @@
-﻿using System;
+﻿
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+
 
 namespace System
 {
@@ -10,6 +13,67 @@ namespace System
 
     public sealed class DotNetUtilities
     {
+
+        public static System.Security.Cryptography.X509Certificates.X509Certificate2 tox(Org.BouncyCastle.X509.X509Certificate bouncyCert)
+        {
+            byte[] ba = bouncyCert.GetEncoded();
+            //return new System.Security.Cryptography.X509Certificates.X509Certificate(ba);
+            return new System.Security.Cryptography.X509Certificates.X509Certificate2(ba);
+        }
+
+
+        // https://stackoverflow.com/questions/6128541/bouncycastle-privatekey-to-x509certificate2-privatekey
+        public static Org.BouncyCastle.X509.X509Certificate CreateX509Cert(string certName)
+        {
+            
+            var keypairgen = new Org.BouncyCastle.Crypto.Generators.RsaKeyPairGenerator();
+            keypairgen.Init(new Org.BouncyCastle.Crypto.KeyGenerationParameters(
+                new Org.BouncyCastle.Security.SecureRandom(
+                    new Org.BouncyCastle.Crypto.Prng.CryptoApiRandomGenerator()
+                    )
+                    , 1024
+                    )
+            );
+
+            var keypair = keypairgen.GenerateKeyPair();
+
+            var gen = new Org.BouncyCastle.X509.X509V3CertificateGenerator();
+
+            
+
+            var CN = new Org.BouncyCastle.Asn1.X509.X509Name("CN=" + certName);
+            var SN = Org.BouncyCastle.Math.BigInteger.ProbablePrime(120, new Random());
+
+            gen.SetSerialNumber(SN);
+            gen.SetSubjectDN(CN);
+            gen.SetIssuerDN(CN);
+            gen.SetNotAfter(DateTime.Now.AddYears(1));
+            gen.SetNotBefore(DateTime.Now.Subtract(new TimeSpan(7, 0, 0, 0)));
+            gen.SetSignatureAlgorithm("MD5WithRSA");
+            gen.SetPublicKey(keypair.Public);
+
+            gen.AddExtension(
+                Org.BouncyCastle.Asn1.X509.X509Extensions.AuthorityKeyIdentifier.Id,
+                false,
+                new Org.BouncyCastle.Asn1.X509.AuthorityKeyIdentifier(
+                    Org.BouncyCastle.X509.SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keypair.Public),
+                    new Org.BouncyCastle.Asn1.X509.GeneralNames(new Org.BouncyCastle.Asn1.X509.GeneralName(CN)),
+                    SN
+                ));
+
+            gen.AddExtension(
+                Org.BouncyCastle.Asn1.X509.X509Extensions.ExtendedKeyUsage.Id,
+                false,
+                new Org.BouncyCastle.Asn1.X509.ExtendedKeyUsage(new ArrayList()
+                {
+                new Org.BouncyCastle.Asn1.DerObjectIdentifier("1.3.6.1.5.5.7.3.1")
+                }));
+
+            Org.BouncyCastle.X509.X509Certificate newCert = gen.Generate(keypair.Private);
+            return newCert;
+        }
+
+
 
         // https://stackoverflow.com/questions/1182612/what-is-the-difference-between-x509certificate2-and-x509certificate-in-net
         public static Org.BouncyCastle.X509.X509Certificate FromX509Certificate(System.Security.Cryptography.X509Certificates.X509Certificate2 x509Cert)
@@ -95,7 +159,7 @@ namespace System
         {
             // https://stackoverflow.com/questions/1182612/what-is-the-difference-between-x509certificate2-and-x509certificate-in-net
             System.Security.Cryptography.X509Certificates.X509Certificate2 cert2 = (System.Security.Cryptography.X509Certificates.X509Certificate2)cert;
-            return cert2.GetRawCertData();
+            return cert2.RawData;
         }
 
 
