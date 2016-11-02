@@ -13,6 +13,7 @@ namespace ArsoftTestServer
 
         public static void Main(string[] args)
         {
+            ArsoftTestServer.Resolvers.Test4();
             SimpleServer.Test();
 
             Console.WriteLine(System.Environment.NewLine);
