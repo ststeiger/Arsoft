@@ -21,7 +21,6 @@ namespace ArsoftTestServer
 
 
 
-
             ArsoftTestServer.Resolvers.Test4();
             SimpleServer.Test();
 

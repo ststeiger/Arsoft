@@ -17,6 +17,21 @@ namespace ArsoftTestServer
     public class Client
     {
 
+
+
+
+        // http://stackoverflow.com/questions/2669841/how-to-get-mx-records-for-a-dns-name-with-system-net-dns
+        public static void GetExchangeDomainName()
+        {
+            var response = DnsClient.Default.Resolve(ARSoft.Tools.Net.DomainName.Parse("gmail.com"), RecordType.Mx);
+            var records = response.AnswerRecords.OfType<MxRecord>();
+            foreach (var record in records)
+            {
+                Console.WriteLine(record.ExchangeDomainName);
+            }
+        }
+
+
         // Get addresses for a domain name(IPv4)
         public static void Test1()
         {

@@ -12,6 +12,7 @@ namespace ArsoftTestServer
 {
 
 
+    // https://docs.ar-soft.de/arsoft.tools.net/DNS%20Server.html
     public class SimpleServer
     {
 
@@ -24,52 +25,6 @@ namespace ArsoftTestServer
                 return;
 
             DnsMessage response = query.CreateResponseInstance();
-
-
-
-
-            response.AnswerRecords.Add(
-                new DsRecord(
-                      DomainName.Parse("example.com")
-                    , RecordClass.Any
-                    , 60 // ttl
-                    , 0 // keyTag
-                    , DnsSecAlgorithm.RsaSha256
-                    , DnsSecDigestType.Sha256
-                    , new byte[] { 1, 2, 3 }
-                )
-            );
-
-            response.AnswerRecords.Add(
-                new DnsKeyRecord(
-                      DomainName.Parse("example.com")
-                    , RecordClass.Any
-                    , 60
-                    , DnsKeyFlags.Zone
-                    , 3
-                    , DnsSecAlgorithm.RsaSha256
-                    , new byte[] { 1, 2, 3 }
-                )
-
-            );
-            response.AnswerRecords.Add(
-                new RrSigRecord(
-                      DomainName.Parse("example.com")
-                    , RecordClass.Any
-                    , 60
-                    , RecordType.A
-                    , DnsSecAlgorithm.RsaSha256
-                    , 4
-                    , 0
-                    , DateTime.Now.AddMinutes(1)
-                    , DateTime.Now
-                    , 0
-                    , DomainName.Parse("example.com")
-                    , new byte[] { 1, 2, 3 }
-                )
-            );
-
-
 
 
             // check for valid query
