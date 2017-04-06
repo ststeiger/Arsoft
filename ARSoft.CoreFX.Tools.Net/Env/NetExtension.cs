@@ -134,7 +134,6 @@ namespace System
 
             var gen = new Org.BouncyCastle.X509.X509V3CertificateGenerator();
 
-            
 
             var CN = new Org.BouncyCastle.Asn1.X509.X509Name("CN=" + certName);
             var SN = Org.BouncyCastle.Math.BigInteger.ProbablePrime(120, new Random());

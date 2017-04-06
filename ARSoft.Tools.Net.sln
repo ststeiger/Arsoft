@@ -1,17 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ARSoft.Tools.Net", "ARSoft.Tools.Net\ARSoft.Tools.Net.csproj", "{65BFA748-C640-49B0-B506-34BBB165233A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ARSoft.CoreFX.Tools.Net", "ARSoft.CoreFX.Tools.Net\ARSoft.CoreFX.Tools.Net.xproj", "{9C3C1C83-31B8-415C-BB60-EDEEEF2834EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ARSoft.CoreFX.Tools.Net", "ARSoft.CoreFX.Tools.Net\ARSoft.CoreFX.Tools.Net.csproj", "{9C3C1C83-31B8-415C-BB60-EDEEEF2834EF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BouncyCastle", "BouncyCastle\BouncyCastle.xproj", "{20DB2560-4C69-4581-B66F-4E425A7420F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BouncyCastle", "BouncyCastle\BouncyCastle.csproj", "{20DB2560-4C69-4581-B66F-4E425A7420F0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ArsoftTestServer", "ArsoftTestServer\ArsoftTestServer.xproj", "{652F6442-1917-4623-B1E1-DCAC1707AA18}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArsoftTestServer", "ArsoftTestServer\ArsoftTestServer.csproj", "{652F6442-1917-4623-B1E1-DCAC1707AA18}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DnsDig", "DnsDig\DnsDig.csproj", "{B1EACF94-22A9-4C47-9BE5-33332E39E07B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{B1EACF94-22A9-4C47-9BE5-33332E39E07B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1EACF94-22A9-4C47-9BE5-33332E39E07B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1EACF94-22A9-4C47-9BE5-33332E39E07B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

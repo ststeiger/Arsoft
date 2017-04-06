@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <AssemblyName>ArsoftTestServer</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <PackageId>ArsoftTestServer</PackageId>
+    <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ARSoft.CoreFX.Tools.Net\ARSoft.CoreFX.Tools.Net.csproj" />
+    <ProjectReference Include="..\BouncyCastle\BouncyCastle.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.0.0" />
+    <PackageReference Include="System.Globalization.Extensions" Version="4.0.1" />
+    <PackageReference Include="System.Net.NetworkInformation" Version="4.1.0" />
+    <PackageReference Include="System.Net.Security" Version="4.0.0" />
+  </ItemGroup>
+
+</Project>
