@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArsoftTestServer", "ArsoftT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DnsDig", "DnsDig\DnsDig.csproj", "{B1EACF94-22A9-4C47-9BE5-33332E39E07B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreTestApplication", "NetCoreTestApplication\NetCoreTestApplication.csproj", "{7E58AB07-FBC9-42FE-A1E0-6DC1FEE93113}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,10 +41,10 @@ Global
 		{B1EACF94-22A9-4C47-9BE5-33332E39E07B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1EACF94-22A9-4C47-9BE5-33332E39E07B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1EACF94-22A9-4C47-9BE5-33332E39E07B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0EDA9219-F985-47B3-B92E-0A5B308ACA7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E58AB07-FBC9-42FE-A1E0-6DC1FEE93113}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E58AB07-FBC9-42FE-A1E0-6DC1FEE93113}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E58AB07-FBC9-42FE-A1E0-6DC1FEE93113}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E58AB07-FBC9-42FE-A1E0-6DC1FEE93113}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
