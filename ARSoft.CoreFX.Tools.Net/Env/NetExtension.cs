@@ -288,23 +288,19 @@ namespace System
             return wh.WaitOne(timeout);
         }
 
-
         public static void Close(this UdpClient udpClient)
         {
+            udpClient.Dispose();
         }
-
 
         public static void Close(this TcpClient tcpClient)
         {
+            tcpClient.Dispose();
         }
-
 
         public static void Close(this System.Threading.WaitHandle handle)
         {
+            handle.Dispose();
         }
-
-
     }
-
-
 }
