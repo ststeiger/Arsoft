@@ -16,10 +16,12 @@ namespace ArsoftTestServer
         private static ARSoft.Tools.Net.Dns.DnsClient s_dnsClient;        
         
         
+        
         public static ARSoft.Tools.Net.Dns.DnsClient CreateDnsClient()
         {
             // return DnsClient.Default;
-            
+        
+            // https://medium.com/@nykolas.z/dns-resolvers-performance-compared-cloudflare-x-google-x-quad9-x-opendns-149e803734e5
             System.Net.IPAddress googlePrimary = System.Net.IPAddress.Parse("8.8.8.8");
             System.Net.IPAddress googleSecondary = System.Net.IPAddress.Parse("8.8.4.4");
             System.Net.IPAddress openDnsPrimary = System.Net.IPAddress.Parse("208.67.222.222");
