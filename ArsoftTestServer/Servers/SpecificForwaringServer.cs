@@ -13,14 +13,14 @@ namespace ArsoftTestServer
     class SpecificForwaringServer
     {
 
-        private static ARSoft.Tools.Net.Dns.DnsClient s_dnsClient;        
-        
-        
-        
+        private static ARSoft.Tools.Net.Dns.DnsClient s_dnsClient;
+
+
+
         public static ARSoft.Tools.Net.Dns.DnsClient CreateDnsClient()
         {
             // return DnsClient.Default;
-        
+
             // https://medium.com/@nykolas.z/dns-resolvers-performance-compared-cloudflare-x-google-x-quad9-x-opendns-149e803734e5
             System.Net.IPAddress googlePrimary = System.Net.IPAddress.Parse("8.8.8.8");
             System.Net.IPAddress googleSecondary = System.Net.IPAddress.Parse("8.8.4.4");
@@ -32,19 +32,19 @@ namespace ArsoftTestServer
             System.Net.IPAddress quad9Secondary = System.Net.IPAddress.Parse("149.112.112.112");
             System.Net.IPAddress cleanBrowsingPrimary = System.Net.IPAddress.Parse("185.228.168.168");
             System.Net.IPAddress cleanBrowsingSecondary = System.Net.IPAddress.Parse("185.228.168.169");
-            
+
             // Norton, policy 1,2 & 3
             System.Net.IPAddress nortonSecurityPrimary = System.Net.IPAddress.Parse("199.85.126.10");
             System.Net.IPAddress nortonSecuritySecondary = System.Net.IPAddress.Parse("199.85.127.10");
-            
+
             System.Net.IPAddress nortonSecPronPrimary = System.Net.IPAddress.Parse("199.85.126.20");
             System.Net.IPAddress nortonSecPronSecondary = System.Net.IPAddress.Parse("199.85.127.20");
-            
+
             System.Net.IPAddress nortonSecPronMorePrimary = System.Net.IPAddress.Parse("199.85.126.30");
             System.Net.IPAddress nortonSecPronMoreSecondary = System.Net.IPAddress.Parse("199.85.127.30");
-            
-            
-            System.Collections.Generic.List<System.Net.IPAddress> ls = 
+
+
+            System.Collections.Generic.List<System.Net.IPAddress> ls =
                 new System.Collections.Generic.List<System.Net.IPAddress>();
 
             // ls.Add(cloudflarePrimary);
@@ -53,10 +53,10 @@ namespace ArsoftTestServer
             int timeout = 500;
             ARSoft.Tools.Net.Dns.DnsClient client = new ARSoft.Tools.Net.Dns.DnsClient(ls, timeout);
             return client;
-        }
+        } // ENd Function CreateDnsClient 
 
 
-        static Data.AnySQL s_sql; 
+        static Data.AnySQL s_sql;
 
         static SpecificForwaringServer()
         {
@@ -65,7 +65,7 @@ namespace ArsoftTestServer
 
             string sqlc = s_sql.GetConnectionString();
             System.Console.WriteLine(sqlc);
-        }
+        } // End Constructo 
 
 
         public static void Test()
@@ -74,15 +74,15 @@ namespace ArsoftTestServer
             {
                 server.ClientConnected += OnClientConnected;
                 server.QueryReceived += OnQueryReceived;
-                
+
                 server.Start();
-                
+
                 System.Console.WriteLine("Press any key to stop server");
                 System.Console.ReadLine();
             } // End Using server 
 
         } // End Sub Test 
-        
+
 
         static async Task OnClientConnected(object sender, ClientConnectedEventArgs e)
         {
@@ -104,22 +104,22 @@ namespace ArsoftTestServer
 
             if (query == null)
                 return;
-            
+
             DnsMessage response = query.CreateResponseInstance();
 
             if ((query.Questions.Count < 1))
             {
                 response.ReturnCode = ReturnCode.NoError;
                 return;
-            }
+            } // End if ((query.Questions.Count < 1)) 
 
-            if(!await ResolveMessage(query, e, response))
+            if (!await ResolveMessage(query, e, response))
                 await ForwardMessage(query, e, response);
 
             // set the response
             // e.Response = response;
-        }
-        
+        } // End Function OnQueryReceived 
+
 
         public class DbDnsRecord
         {
@@ -130,15 +130,14 @@ namespace ArsoftTestServer
             public int? REC_TTL;
             public int? REC_Prio;
             public long? REC_ChangeDate;
-        }
+        } // End Class DbDnsRecord 
 
 
         static async Task<bool> ResolveMessage(DnsMessage query, QueryReceivedEventArgs e, DnsMessage response)
         {
             DbDnsRecord rec = null;
 
-
-            using (var cmd = s_sql.CreateCommand(@"
+            using (System.Data.Common.DbCommand cmd = s_sql.CreateCommand(@"
 -- DECLARE @in_recordType int 
 -- DECLARE @in_recordName varchar(4000) 
 
@@ -176,7 +175,7 @@ AND T_Records.REC_Name = @in_recordName
                     System.Console.WriteLine(ex.Message);
                     System.Console.WriteLine(ex.StackTrace);
                 }
-            }
+            } // End Using cmd 
 
             if (rec != null)
             {
@@ -184,17 +183,44 @@ AND T_Records.REC_Name = @in_recordName
 
                 DnsRecordBase record = null;
 
+                // https://blog.dnsimple.com/2015/04/common-dns-records/
                 switch ((RecordType)rec.REC_RT_Id)
                 {
+                    case RecordType.Soa:
+                        break;
+                    case RecordType.Ns:
+                        break;
+                    case RecordType.Srv:
+                        break;
+                    // https://www.openafs.org/
+                    // https://en.wikipedia.org/wiki/OpenAFS
+                    // http://www.rjsystems.nl/en/2100-dns-discovery-openafs.php
+                    // OpenAFS is an open source implementation of the Andrew distributed file system(AFS). 
+                    case RecordType.Afsdb:
+                        break;
+                    //A DNS-based Authentication of Named Entities (DANE) method for publishing and locating OpenPGP public keys in DNS for a specific email address using an OPENPGPKEY DNS resource record.
+                    case RecordType.OpenPGPKey:
+                        break;
+                    // Canonical name records, or CNAME records, are often called alias records because they map an alias to the canonical name. When a name server finds a CNAME record, it replaces the name with the canonical name and looks up the new name.
+                    case RecordType.CName:
+                        break;
+                    case RecordType.Ptr:
+                        break;
                     case RecordType.A:
                         record = new ARSoft.Tools.Net.Dns.ARecord(DomainName.Parse(rec.REC_Name), ttl, System.Net.IPAddress.Parse(rec.REC_Content));
+                        break;
+                    case RecordType.Aaaa:
+                        break;
+                    case RecordType.Mx:
                         break;
                     case RecordType.Txt:
                         record = new ARSoft.Tools.Net.Dns.TxtRecord(DomainName.Parse(rec.REC_Name), ttl, rec.REC_Content);
                         break;
+                    case RecordType.SshFp:
+                        break;
                     default:
                         break;
-                }
+                } // End Switch 
 
                 if (record != null)
                     response.AnswerRecords.Add(record);
@@ -202,10 +228,10 @@ AND T_Records.REC_Name = @in_recordName
                 response.ReturnCode = ReturnCode.NoError;
                 e.Response = response;
                 return await Task<bool>.FromResult(true);
-            }
+            } // End if (rec != null) 
 
             return await Task<bool>.FromResult(false);
-        }
+        } // End Function ResolveMessage
 
 
         static async Task ForwardMessage(DnsMessage query, QueryReceivedEventArgs e, DnsMessage response)
@@ -244,11 +270,11 @@ AND T_Records.REC_Name = @in_recordName
                 } // End if (upstreamResponse != null) 
 
             } // End if ((message.Questions.Count == 1)) 
-            
+
         } // End Function OnQueryReceived 
-        
-        
+
+
     } // End Class SpecificForwaringServer 
-    
-    
+
+
 } // End Namespace ArsoftTestServer 
