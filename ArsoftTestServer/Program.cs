@@ -1,12 +1,8 @@
-﻿using ARSoft.Tools.Net;
-using ARSoft.Tools.Net.Dns;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+﻿
 namespace ArsoftTestServer
 {
+
+
     public class Program
     {
 
@@ -18,15 +14,19 @@ namespace ArsoftTestServer
             // SecurityKey secKey = new X509SecurityKey(cert2);
 
 
+            ArsoftTestServer.SpecificForwaringServer.Test();
 
 
+            // ArsoftTestServer.Resolvers.Test4();
+            // ArsoftTestServer.SimpleServer.Test();
 
-            ArsoftTestServer.Resolvers.Test4();
-            ArsoftTestServer.SimpleServer.Test();
-
-            Console.WriteLine(System.Environment.NewLine);
-            Console.WriteLine(" --- Press any key to continue --- ");
+            System.Console.WriteLine(System.Environment.NewLine);
+            System.Console.WriteLine(" --- Press any key to continue --- ");
             System.Console.ReadKey();
         }
+
+
     }
+
+
 }
