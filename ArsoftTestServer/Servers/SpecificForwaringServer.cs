@@ -158,24 +158,24 @@ namespace ArsoftTestServer
 
 
 SELECT 
-	 T_Records.REC_Id
+	 REC_Id
 	--,T_Records.REC_DOM_Id
 	,T_Records.REC_RT_Id
 	,T_Records.REC_Name
 	,T_Records.REC_Content
-	,ISNULL(T_Records.REC_TTL, 100) AS REC_TTL 
+	,T_Records.REC_ResponsibleName
+	,COALESCE(T_Records.REC_TTL, 100) AS REC_TTL 
 	,T_Records.REC_Prio
 	,T_Records.REC_Weight
 	,T_Records.REC_Port
-	,T_Records.REC_ChangeDate
-	,T_Records.REC_AfsSubType
-	,T_Records.REC_ResponsibleName
 	,T_Records.REC_SerialNumber
-	,T_Records.REC_RefreshInterval 
-	,T_Records.REC_RetryInterval 
-	,T_Records.REC_ExpireInterval 
-	,T_Records.REC_NegativeCachingTTL 
-FROM T_Records
+	,T_Records.REC_RefreshInterval
+	,T_Records.REC_RetryInterval
+	,T_Records.REC_ExpireInterval
+	,T_Records.REC_NegativeCachingTTL
+	,T_Records.REC_AfsSubType
+	,T_Records.REC_ChangeDate
+FROM T_Records 
 WHERE REC_RT_Id	= @in_recordType 
 AND T_Records.REC_Name = @in_recordName 
 ;
@@ -205,6 +205,7 @@ AND T_Records.REC_Name = @in_recordName
                 DnsRecordBase record = null;
 
                 // https://blog.dnsimple.com/2015/04/common-dns-records/
+                // https://en.wikipedia.org/wiki/List_of_DNS_record_types
                 switch ((RecordType)rec.REC_RT_Id)
                 {
                     case RecordType.Soa:
@@ -213,7 +214,7 @@ AND T_Records.REC_Name = @in_recordName
                         //  , int retryInterval, int expireInterval, int negativeCachingTTL)
                         record = new ARSoft.Tools.Net.Dns.SoaRecord(
                                   DomainName.Parse(rec.REC_Name)
-                                , ttl
+                                , rec.REC_TTL.Value
                                 , DomainName.Parse(rec.REC_Content)
                                 , DomainName.Parse(rec.REC_ResponsibleName)
                                 , rec.REC_SerialNumber.Value
@@ -235,6 +236,8 @@ AND T_Records.REC_Name = @in_recordName
                     // http://www.rjsystems.nl/en/2100-dns-discovery-openafs.php
                     // OpenAFS is an open source implementation of the Andrew distributed file system(AFS). 
                     case RecordType.Afsdb:
+                        // http://www.rjsystems.nl/en/2100-dns-discovery-openafs.php
+
                         record = new ARSoft.Tools.Net.Dns.AfsdbRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, (AfsdbRecord.AfsSubType) (uint)rec.REC_AfsSubType.Value, DomainName.Parse(rec.REC_Content));
                         break;
                     // A DNS-based Authentication of Named Entities (DANE) method
@@ -256,22 +259,22 @@ AND T_Records.REC_Name = @in_recordName
                         break;
                     // Canonical name records, or CNAME records, are often called alias records because they map an alias to the canonical name. When a name server finds a CNAME record, it replaces the name with the canonical name and looks up the new name.
                     case RecordType.CName:
-                        record = new ARSoft.Tools.Net.Dns.CNameRecord(DomainName.Parse(rec.REC_Name), ttl, DomainName.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.CNameRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.Ptr:
-                        record = new ARSoft.Tools.Net.Dns.PtrRecord(DomainName.Parse(rec.REC_Name), ttl, DomainName.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.PtrRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.A:
-                        record = new ARSoft.Tools.Net.Dns.ARecord(DomainName.Parse(rec.REC_Name), ttl, System.Net.IPAddress.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.ARecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, System.Net.IPAddress.Parse(rec.REC_Content));
                         break;
                     case RecordType.Aaaa:
-                        record = new ARSoft.Tools.Net.Dns.AaaaRecord(DomainName.Parse(rec.REC_Name), ttl, System.Net.IPAddress.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.AaaaRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, System.Net.IPAddress.Parse(rec.REC_Content));
                         break;
                     case RecordType.Mx:
-                        record = new ARSoft.Tools.Net.Dns.MxRecord(DomainName.Parse(rec.REC_Name), ttl, 0, DomainName.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.MxRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, 0, DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.Txt:
-                        record = new ARSoft.Tools.Net.Dns.TxtRecord(DomainName.Parse(rec.REC_Name), ttl, rec.REC_Content);
+                        record = new ARSoft.Tools.Net.Dns.TxtRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, rec.REC_Content);
                         break;
                     case RecordType.SshFp:
                         // https://unix.stackexchange.com/questions/121880/how-do-i-generate-sshfp-records
@@ -286,7 +289,7 @@ AND T_Records.REC_Name = @in_recordName
                         
                         byte[] fp = null;
                         
-                        record = new ARSoft.Tools.Net.Dns.SshFpRecord(DomainName.Parse(rec.REC_Name), ttl, sfa,sfp, fp);
+                        record = new ARSoft.Tools.Net.Dns.SshFpRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, sfa,sfp, fp);
                         break;
                     default:
                         break;
