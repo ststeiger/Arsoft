@@ -1,4 +1,5 @@
 ﻿
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 using ARSoft.Tools.Net;
@@ -129,7 +130,18 @@ namespace ArsoftTestServer
             public string REC_Content;
             public int? REC_TTL;
             public int? REC_Prio;
+            public int? REC_Weight;
+            public uint? REC_Port;
             public long? REC_ChangeDate;
+            public int? REC_AfsSubType;
+            public string REC_ResponsibleName;
+            public uint? REC_SerialNumber;
+            public int? REC_RefreshInterval; 
+            public int? REC_RetryInterval ;
+            public int? REC_ExpireInterval;
+            public int? REC_NegativeCachingTTL;
+
+
         } // End Class DbDnsRecord 
 
 
@@ -153,7 +165,16 @@ SELECT
 	,T_Records.REC_Content
 	,ISNULL(T_Records.REC_TTL, 100) AS REC_TTL 
 	,T_Records.REC_Prio
+	,T_Records.REC_Weight
+	,T_Records.REC_Port
 	,T_Records.REC_ChangeDate
+	,T_Records.REC_AfsSubType
+	,T_Records.REC_ResponsibleName
+	,T_Records.REC_SerialNumber
+	,T_Records.REC_RefreshInterval 
+	,T_Records.REC_RetryInterval 
+	,T_Records.REC_ExpireInterval 
+	,T_Records.REC_NegativeCachingTTL 
 FROM T_Records
 WHERE REC_RT_Id	= @in_recordType 
 AND T_Records.REC_Name = @in_recordName 
@@ -187,36 +208,85 @@ AND T_Records.REC_Name = @in_recordName
                 switch ((RecordType)rec.REC_RT_Id)
                 {
                     case RecordType.Soa:
+                        // SoaRecord(DomainName name, int timeToLive, DomainName masterName
+                        //  , DomainName responsibleName, uint serialNumber, int refreshInterval
+                        //  , int retryInterval, int expireInterval, int negativeCachingTTL)
+                        record = new ARSoft.Tools.Net.Dns.SoaRecord(
+                                  DomainName.Parse(rec.REC_Name)
+                                , ttl
+                                , DomainName.Parse(rec.REC_Content)
+                                , DomainName.Parse(rec.REC_ResponsibleName)
+                                , rec.REC_SerialNumber.Value
+                                , rec.REC_RefreshInterval.Value 
+                                , rec.REC_RetryInterval.Value
+                                , rec.REC_ExpireInterval.Value
+                                , rec.REC_NegativeCachingTTL.Value
+                        );
                         break;
                     case RecordType.Ns:
+                        record = new ARSoft.Tools.Net.Dns.NsRecord(DomainName.Parse(rec.REC_Name), ttl, DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.Srv:
+                        // SrvRecord(DomainName name, int timeToLive, ushort priority, ushort weight, ushort port, DomainName target)
+                        record = new ARSoft.Tools.Net.Dns.SrvRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, (ushort) rec.REC_Prio.Value, (ushort) rec.REC_Weight.Value, (ushort) rec.REC_Port.Value, DomainName.Parse(rec.REC_Content));
                         break;
                     // https://www.openafs.org/
                     // https://en.wikipedia.org/wiki/OpenAFS
                     // http://www.rjsystems.nl/en/2100-dns-discovery-openafs.php
                     // OpenAFS is an open source implementation of the Andrew distributed file system(AFS). 
                     case RecordType.Afsdb:
+                        record = new ARSoft.Tools.Net.Dns.AfsdbRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, (AfsdbRecord.AfsSubType) (uint)rec.REC_AfsSubType.Value, DomainName.Parse(rec.REC_Content));
                         break;
-                    //A DNS-based Authentication of Named Entities (DANE) method for publishing and locating OpenPGP public keys in DNS for a specific email address using an OPENPGPKEY DNS resource record.
+                    // A DNS-based Authentication of Named Entities (DANE) method
+                    // for publishing and locating OpenPGP public keys in DNS
+                    // for a specific email address using an OPENPGPKEY DNS resource record.
                     case RecordType.OpenPGPKey:
+                        byte[] publicKey = null;
+                        
+                        // hexdump(sha256(truncate(utf8(ocalpart), 28)
+                        // https://www.huque.com/bin/openpgpkey
+                        // The OPENPGPKEY DNS record is specied in RFC 7929. 
+                        // The localpart of the uid is encoded as a DNS label
+                        // containing the hexdump of the SHA-256 hash 
+                        // of the utf-8 encoded localpart, truncated to 28 octets. 
+                        // Normally the "Standard" output format should be used. 
+                        // The "Generic Encoding" output format is provided to help work 
+                        // with older DNS software that does not yet understand the OPENPGPKEY record type.
+                        record = new ARSoft.Tools.Net.Dns.OpenPGPKeyRecord(DomainName.Parse(rec.REC_Name), ttl, publicKey);
                         break;
                     // Canonical name records, or CNAME records, are often called alias records because they map an alias to the canonical name. When a name server finds a CNAME record, it replaces the name with the canonical name and looks up the new name.
                     case RecordType.CName:
+                        record = new ARSoft.Tools.Net.Dns.CNameRecord(DomainName.Parse(rec.REC_Name), ttl, DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.Ptr:
+                        record = new ARSoft.Tools.Net.Dns.PtrRecord(DomainName.Parse(rec.REC_Name), ttl, DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.A:
                         record = new ARSoft.Tools.Net.Dns.ARecord(DomainName.Parse(rec.REC_Name), ttl, System.Net.IPAddress.Parse(rec.REC_Content));
                         break;
                     case RecordType.Aaaa:
+                        record = new ARSoft.Tools.Net.Dns.AaaaRecord(DomainName.Parse(rec.REC_Name), ttl, System.Net.IPAddress.Parse(rec.REC_Content));
                         break;
                     case RecordType.Mx:
+                        record = new ARSoft.Tools.Net.Dns.MxRecord(DomainName.Parse(rec.REC_Name), ttl, 0, DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.Txt:
                         record = new ARSoft.Tools.Net.Dns.TxtRecord(DomainName.Parse(rec.REC_Name), ttl, rec.REC_Content);
                         break;
                     case RecordType.SshFp:
+                        // https://unix.stackexchange.com/questions/121880/how-do-i-generate-sshfp-records
+                        
+                        // SshFpRecord(DomainName name, int timeToLive, SshFpAlgorithm algorithm
+                        //     , SshFpFingerPrintType fingerPrintType, byte[] fingerPrint)
+                        ARSoft.Tools.Net.Dns.SshFpRecord.SshFpAlgorithm sfa = ARSoft.Tools.Net.Dns.SshFpRecord
+                            .SshFpAlgorithm.Rsa;
+                        
+                        ARSoft.Tools.Net.Dns.SshFpRecord.SshFpFingerPrintType sfp = ARSoft.Tools.Net.Dns.SshFpRecord
+                            .SshFpFingerPrintType.Sha256;
+                        
+                        byte[] fp = null;
+                        
+                        record = new ARSoft.Tools.Net.Dns.SshFpRecord(DomainName.Parse(rec.REC_Name), ttl, sfa,sfp, fp);
                         break;
                     default:
                         break;
