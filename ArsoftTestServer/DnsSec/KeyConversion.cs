@@ -1,6 +1,7 @@
 ﻿
 using ARSoft.Tools.Net.Dns;
-using Org.BouncyCastle.Math
+using Org.BouncyCastle.Math;
+
 
 namespace ArsoftTestServer.DnsSec
 {
@@ -120,7 +121,7 @@ namespace ArsoftTestServer.DnsSec
 
 
     public class IllegalArgumentException
-        :System.Exception
+        : System.Exception
     {
 
         public IllegalArgumentException()
@@ -199,13 +200,39 @@ namespace ArsoftTestServer.DnsSec
         }
 
 
+        // int src1, src2, ans;
+        // ans = src1 >>> src2;
+        // https://stackoverflow.com/questions/19058859/what-does-mean-in-java/19058871
+        private int rightMove(int value, int pos)
+        {
+            if (pos != 0)
+            {
+                int mask = 0x7fffffff;
+                value >>= 1;
+                value &= mask;
+                value >>= pos - 1;
+            }
+            return value;
+        }
+
+
         // Writes an unsigned 16 bit value to the stream.
         // @param val The value to be written
         public void writeU16(int val)
         {
             check(val, 16);
             need(2);
-            array[pos++] = (byte)((val >>> 8) & 0xFF);
+
+            // The >>> operator is the unsigned right bit-shift operator in Java. 
+            // It effectively divides the operand by 2 to the power of the right operand, or just 2 here.
+            // The difference between >> and >>> would only show up when shifting negative numbers. 
+            // The >> operator shifts a 1 bit into the most significant bit if it was a 1, and the >>> shifts in a 0 regardless.
+
+            // array[pos++] = (byte)((val >>> 8) & 0xFF);
+            // array[pos++] = (byte)(rightMove(val, 8) & 0xFF);
+
+            int uval = (int)((uint)val >> 8);
+            array[pos++] = (byte)(uval & 0xFF);
             array[pos++] = (byte)(val & 0xFF);
         }
 
@@ -232,8 +259,25 @@ namespace ArsoftTestServer.DnsSec
     }
 
 
-    public class PublicKey
+    public abstract class PublicKey
     {
+
+        public abstract Org.BouncyCastle.Crypto.AsymmetricKeyParameter Public_Key { get; }
+
+
+        public static PublicKey CreateInstance(Org.BouncyCastle.Crypto.AsymmetricKeyParameter publicKey)
+        {
+            if (publicKey is Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters)
+                return new ECPublicKey((Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters)publicKey);
+
+            if (publicKey is Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters)
+                return new DSAPublicKey((Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters)publicKey);
+
+            if (publicKey is Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters)
+                return new RSAPublicKey((Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters)publicKey);
+
+            throw new System.NotSupportedException("Unrecognized AsymmetricKeyParameter");
+        }
 
     }
 
@@ -242,18 +286,49 @@ namespace ArsoftTestServer.DnsSec
         : PublicKey
     {
 
+        protected Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters m_publicKey;
+
+        public override Org.BouncyCastle.Crypto.AsymmetricKeyParameter Public_Key { get { return this.m_publicKey; } }
+
+
+        public Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters PublicKey { get { return this.m_publicKey; } }
+
+
+        public RSAPublicKey(Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters publicKey)
+        {
+            m_publicKey = publicKey;
+        }
+
     }
 
     public class DSAPublicKey
         : PublicKey
     {
+        protected Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters m_publicKey;
 
+        public override Org.BouncyCastle.Crypto.AsymmetricKeyParameter Public_Key { get { return this.m_publicKey; } }
+
+        public Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters PublicKey { get { return this.m_publicKey; } }
+
+
+        public DSAPublicKey(Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters publicKey)
+        {
+            m_publicKey = publicKey;
+        }
     }
 
     public class ECPublicKey
         : PublicKey
     {
+        protected Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters m_publicKey;
 
+        public override Org.BouncyCastle.Crypto.AsymmetricKeyParameter Public_Key { get { return this.m_publicKey; } }
+        public Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters PublicKey { get { return this.m_publicKey; } }
+
+        public ECPublicKey(Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters publicKey)
+        {
+            m_publicKey = publicKey;
+        }
     }
 
 
@@ -354,9 +429,9 @@ namespace ArsoftTestServer.DnsSec
             //spec = new ECParameterSpec(curve, new ECPoint(gx, gy), n, 1);
             this.spec = new Org.BouncyCastle.Crypto.Parameters.ECDomainParameters(
                  curve
-                ,curve.CreatePoint(gx, gy) // G 
-                ,n
-                ,h
+                , curve.CreatePoint(gx, gy) // G 
+                , n
+                , h
             );
 
         }
@@ -410,19 +485,6 @@ namespace ArsoftTestServer.DnsSec
         );
 
 
-        private static PublicKey toECGOSTPublicKey(KEYBase r, ECKeyInfo keyinfo) // throws IOException, GeneralSecurityException 
-        {
-            DNSInput @in = new DNSInput(r.getKey());
-
-            // BigInteger x = readBigIntegerLittleEndian(@in, keyinfo.length);
-            // BigInteger y = readBigIntegerLittleEndian(@in, keyinfo.length);
-            // ECPoint q = new ECPoint(x, y);
-
-            // KeyFactory factory = KeyFactory.getInstance("ECGOST3410");
-            // return factory.generatePublic(new ECPublicKeySpec(q, keyinfo.spec));
-            return null;
-        }
-
     } // End Class ECKeyInfo 
 
 
@@ -435,8 +497,8 @@ namespace ArsoftTestServer.DnsSec
         private static byte[] fromRSAPublicKey(RSAPublicKey key)
         {
             DNSOutput @out = new DNSOutput();
-            
-            Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters kp = null; // key
+
+            Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters kp = key.PublicKey;
 
             // BigInteger exponent = key.getPublicExponent();
             BigInteger exponent = kp.Exponent;
@@ -448,9 +510,9 @@ namespace ArsoftTestServer.DnsSec
             int exponentLength = Helpers.BigIntegerLength(exponent);
 
             if (exponentLength < 256)
-             {
-             @out.writeU8(exponentLength);
-             }
+            {
+                @out.writeU8(exponentLength);
+            }
             else
             {
                 @out.writeU8(0);
@@ -468,7 +530,7 @@ namespace ArsoftTestServer.DnsSec
         {
             DNSOutput @out = new DNSOutput();
 
-            Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters dp = null; // Key
+            Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters dp = key.PublicKey;
 
 
             // BigInteger q = key.getParams().getQ();
@@ -498,7 +560,7 @@ namespace ArsoftTestServer.DnsSec
         {
             DNSOutput @out = new DNSOutput();
 
-            Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters publicParams = null; // key
+            Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters publicParams = key.PublicKey;
 
             //BigInteger x = key.getW().getAffineX();
             BigInteger x = publicParams.Q.AffineXCoord.ToBigInteger();
@@ -513,11 +575,12 @@ namespace ArsoftTestServer.DnsSec
             return @out.toByteArray();
         }
 
+
         private static byte[] fromECDSAPublicKey(ECPublicKey key, ECKeyInfo keyinfo)
         {
             DNSOutput @out = new DNSOutput();
 
-            Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters publicParams = null; // key
+            Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters publicParams = key.PublicKey;
 
 
             // BigInteger x = key.getW().getAffineX();
@@ -531,7 +594,6 @@ namespace ArsoftTestServer.DnsSec
 
             return @out.toByteArray();
         }
-
 
 
         // Builds a DNSKEY record from a PublicKey
@@ -588,7 +650,7 @@ namespace ArsoftTestServer.DnsSec
     } // End Class KeyConversion 
 
 
-    
+
     internal class Helpers
     {
         internal static int BigIntegerLength(BigInteger i)
@@ -626,7 +688,7 @@ namespace ArsoftTestServer.DnsSec
 
         internal static void writeBigInteger(DNSOutput @out, BigInteger val)
         {
-            
+
             byte[] b = trimByteArray(val.ToByteArray());
             @out.writeByteArray(b);
         }
@@ -711,12 +773,10 @@ namespace ArsoftTestServer.DnsSec
             return factory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
             */
 
-            
-
             Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters kp
                 = new Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters(false, modulus, exponent);
 
-            return null;
+            return PublicKey.CreateInstance(kp);
         }
 
 
@@ -743,7 +803,7 @@ namespace ArsoftTestServer.DnsSec
 
             Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters dp = new Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters(y, para);
 
-            return null;
+            return PublicKey.CreateInstance(dp);
         }
 
 
@@ -774,14 +834,18 @@ namespace ArsoftTestServer.DnsSec
 
             BigInteger x = Helpers.readBigIntegerLittleEndian(@in, keyinfo.length);
             BigInteger y = Helpers.readBigIntegerLittleEndian(@in, keyinfo.length);
-            
+
             // OID to be found in Org.BouncyCastle.Security.GeneratorUtilities.GetKeyPairGenerator("ECGOST3410");
-            Org.BouncyCastle.Crypto.Parameters.ECDomainParameters domain = Org.BouncyCastle.Asn1.CryptoPro.ECGost3410NamedCurves.GetByOid(Org.BouncyCastle.Asn1.CryptoPro.CryptoProObjectIdentifiers.GostR3410x94CryptoProA);
-            Org.BouncyCastle.Math.EC.ECCurve c = domain.Curve;
-            Org.BouncyCastle.Math.EC.ECPoint q = new Org.BouncyCastle.Math.EC.FpPoint(c, c.FromBigInteger(x), c.FromBigInteger(y));
+            // Org.BouncyCastle.Crypto.Parameters.ECDomainParameters domain = Org.BouncyCastle.Asn1.CryptoPro.ECGost3410NamedCurves.GetByOid(Org.BouncyCastle.Asn1.CryptoPro.CryptoProObjectIdentifiers.GostR3410x94CryptoProA);
+            // Org.BouncyCastle.Math.EC.ECCurve c = domain.Curve;
+            // Org.BouncyCastle.Math.EC.ECPoint q = new Org.BouncyCastle.Math.EC.FpPoint(c, c.FromBigInteger(x), c.FromBigInteger(y));
 
-            Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters publicParams = new Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters(q, domain);
+            // Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters publicParams = new Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters(q, domain);
 
+
+
+            Org.BouncyCastle.Math.EC.ECPoint q = keyinfo.curve.CreatePoint(x, y);
+            Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters publicParams = new Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters(q, keyinfo.spec);
 
 
             // Org.BouncyCastle.Crypto.Signers.ECGost3410Signer
@@ -795,7 +859,7 @@ namespace ArsoftTestServer.DnsSec
             return factory.generatePublic(new ECPublicKeySpec(q, keyinfo.spec));
             */
 
-            return null;
+            return PublicKey.CreateInstance(publicParams);
         }
 
 
@@ -815,7 +879,7 @@ namespace ArsoftTestServer.DnsSec
             string curveName = "P-521";
             Org.BouncyCastle.Asn1.X9.X9ECParameters ecP = Org.BouncyCastle.Asn1.Nist.NistNamedCurves.GetByName(curveName);
             Org.BouncyCastle.Math.EC.FpCurve c = (Org.BouncyCastle.Math.EC.FpCurve)ecP.Curve;
-            
+
             Org.BouncyCastle.Math.EC.ECFieldElement x = c.FromBigInteger(xx);
             Org.BouncyCastle.Math.EC.ECFieldElement y = c.FromBigInteger(yy);
             Org.BouncyCastle.Math.EC.ECPoint q = new Org.BouncyCastle.Math.EC.FpPoint(c, x, y);
@@ -859,8 +923,6 @@ namespace ArsoftTestServer.DnsSec
             BigInteger y = Helpers.readBigInteger(@in, keyinfo.length);
 
 
-
-
             // Org.BouncyCastle.Asn1.X9.X9ECParameters ecParams = Org.BouncyCastle.Asn1.Sec.SecNamedCurves.GetByName("secp521r1");
             // Org.BouncyCastle.Asn1.X9.X9ECParameters ecParams = Org.BouncyCastle.Asn1.Sec.SecNamedCurves.GetByName("secp256r1");
             // Org.BouncyCastle.Asn1.X9.X9ECParameters p = Org.BouncyCastle.Asn1.X9.X962NamedCurves.GetByOid(Org.BouncyCastle.Asn1.X9.X9ObjectIdentifiers.Prime239v1);
@@ -869,8 +931,8 @@ namespace ArsoftTestServer.DnsSec
             // Org.BouncyCastle.Math.EC.FpCurve c = (Org.BouncyCastle.Math.EC.FpCurve)ecP.Curve;
 
 
-            Org.BouncyCastle.Asn1.X9.X9ECParameters p = Org.BouncyCastle.Asn1.X9.X962NamedCurves.GetByOid(Org.BouncyCastle.Asn1.X9.X9ObjectIdentifiers.ECDsaWithSha512);
-            Org.BouncyCastle.Math.EC.ECCurve c = p.Curve;
+            // Org.BouncyCastle.Asn1.X9.X9ECParameters p = Org.BouncyCastle.Asn1.X9.X962NamedCurves.GetByOid(Org.BouncyCastle.Asn1.X9.X9ObjectIdentifiers.ECDsaWithSha512);
+            // Org.BouncyCastle.Math.EC.ECCurve c = p.Curve;
             // Org.BouncyCastle.Crypto.Parameters.ECDomainParameters domain = new Org.BouncyCastle.Crypto.Parameters.ECDomainParameters(c, p.G, p.N, p.H);
             // Org.BouncyCastle.Math.EC.ECPoint q = new Org.BouncyCastle.Math.EC.FpPoint(c, c.FromBigInteger(x), c.FromBigInteger(y));
             // Org.BouncyCastle.Math.EC.ECPoint q = c.CreatePoint(x, y);
@@ -896,13 +958,13 @@ namespace ArsoftTestServer.DnsSec
             return factory.generatePublic(new ECPublicKeySpec(q, keyinfo.spec));
             */
 
-            return null;
+            return PublicKey.CreateInstance(publicParams);
         }
 
 
         // Converts a KEY/DNSKEY record into a PublicKey 
         // https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
-        static PublicKey toPublicKey(KEYBase r) // throws DNSSECException
+        public static PublicKey toPublicKey(KEYBase r) // throws DNSSECException
         {
             int alg = r.getAlgorithm();
             try
