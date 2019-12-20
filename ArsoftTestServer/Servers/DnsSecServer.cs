@@ -34,60 +34,58 @@ namespace ArsoftTestServer
         private static async Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
         {
             DnsMessage query = e.Query as DnsMessage;
-
+            
             if (query == null)
                 return;
-
+            
             DnsMessage response = query.CreateResponseInstance();
             
-
+            
             response.AnswerRecords.Add(
                 new DsRecord(
                       DomainName.Parse("example.com")
                     , RecordClass.Any
                     , 60 // ttl
-                    , 0 // keyTag
-                    , DnsSecAlgorithm.RsaSha256
-                    , DnsSecDigestType.Sha256
+                    , 0 // Key Tag: A short numeric value which can help quickly identify the referenced DNSKEY-record.
+                    , DnsSecAlgorithm.RsaSha256 // The algorithm of the referenced DNSKEY-record.
+                    , DnsSecDigestType.Sha256 // Digest Type: Cryptographic hash algorithm used to create the Digest value.
                     , new byte[] { 1, 2, 3 }
                 )
             );
-
-
+            
+            
             response.AnswerRecords.Add(
                 new DnsKeyRecord(
                       DomainName.Parse("example.com")
                     , RecordClass.Any
                     , 60
                     , DnsKeyFlags.Zone
-                    , 3
-                    , DnsSecAlgorithm.RsaSha256
-                    , new byte[] { 1, 2, 3 }
+                    , 3 // Fixed value of 3 (for backwards compatibility)
+                    , DnsSecAlgorithm.RsaSha256 // The public key's cryptographic algorithm.
+                    , new byte[] { 1, 2, 3 } // Public key data.
                 )
 
             );
-
-
+            
+            
             response.AnswerRecords.Add(
                 new RrSigRecord(
                       DomainName.Parse("example.com")
                     , RecordClass.Any
                     , 60
-                    , RecordType.A
-                    , DnsSecAlgorithm.RsaSha256
-                    , 4
-                    , 0
-                    , DateTime.Now.AddMinutes(1)
-                    , DateTime.Now
-                    , 0
-                    , DomainName.Parse("example.com")
-                    , new byte[] { 1, 2, 3 }
+                    , RecordType.A   // Type Covered: DNS record type that this signature covers.
+                    , DnsSecAlgorithm.RsaSha256 // Cryptographic algorithm used to create the signature.
+                      , 4 // Labels: Number of labels in the original RRSIG-record name (used to validate wildcards).
+                    , 0 // Original TTL: TTL value of the covered record set.
+                    , DateTime.Now.AddMinutes(1) // Signature Expiration: When the signature expires.
+                    , DateTime.Now // Signature Inception: When the signature was created.
+                    , 0 // Key Tag: A short numeric value which can help quickly identify the DNSKEY-record which can be used to validate this signature.
+                    , DomainName.Parse("example.com") // Signer's Name: Name of the DNSKEY-record which can be used to validate this signature.
+                    , new byte[] { 1, 2, 3 } // Signature: Cryptographic signature.
                 )
             );
-
-
-
-
+            
+            
             // check for valid query
             if ((query.Questions.Count == 1)
                 && (query.Questions[0].RecordType == RecordType.Txt)
@@ -100,12 +98,12 @@ namespace ArsoftTestServer
             {
                 response.ReturnCode = ReturnCode.ServerFailure;
             }
-
+            
             // set the response
             e.Response = response;
         } // End Function OnQueryReceived 
-
-
+        
+        
         public static void Test()
         {
             
