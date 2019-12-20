@@ -37,28 +37,36 @@ namespace ArsoftTestServer
             
             if (query == null)
                 return;
-            
+
+            // https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions
+
             DnsMessage response = query.CreateResponseInstance();
-            
-            
+
+            // https://tools.ietf.org/html/rfc3658
+            // https://www.dynu.com/Resources/DNS-Records/DS-Record
             response.AnswerRecords.Add(
                 new DsRecord(
-                      DomainName.Parse("example.com")
+                      DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
+                                                     // Fully qualified hostnames terminated by a period will not append the origin.
                     , RecordClass.Any
-                    , 60 // ttl
+                    , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
+                        // before the query expires and a new one needs to be done.
                     , 0 // Key Tag: A short numeric value which can help quickly identify the referenced DNSKEY-record.
                     , DnsSecAlgorithm.RsaSha256 // The algorithm of the referenced DNSKEY-record.
                     , DnsSecDigestType.Sha256 // Digest Type: Cryptographic hash algorithm used to create the Digest value.
-                    , new byte[] { 1, 2, 3 }
+                    , new byte[] { 1, 2, 3 } // A cryptographic hash value of the referenced DNSKEY-record.
                 )
             );
-            
-            
+
+            // https://tools.ietf.org/html/rfc4034
+            // https://www.dynu.com/Resources/DNS-Records/DNSKEY-Record
             response.AnswerRecords.Add(
                 new DnsKeyRecord(
-                      DomainName.Parse("example.com")
+                      DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
+                                                     // Fully qualified hostnames terminated by a period will not append the origin.
                     , RecordClass.Any
-                    , 60
+                    , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
+                         // before the query expires and a new one needs to be done.
                     , DnsKeyFlags.Zone
                     , 3 // Fixed value of 3 (for backwards compatibility)
                     , DnsSecAlgorithm.RsaSha256 // The public key's cryptographic algorithm.
@@ -66,13 +74,16 @@ namespace ArsoftTestServer
                 )
 
             );
-            
-            
+
+            // https://simpledns.plus/help/rrsig-records
+            // https://simpledns.plus/help/definition-ttl-time-to-live
+            // https://de.wikipedia.org/wiki/RRSIG_Resource_Record
             response.AnswerRecords.Add(
                 new RrSigRecord(
-                      DomainName.Parse("example.com")
+                      DomainName.Parse("example.com") // Name of the digitally signed RRs
                     , RecordClass.Any
-                    , 60
+                    , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
+                         // before the query expires and a new one needs to be done.
                     , RecordType.A   // Type Covered: DNS record type that this signature covers.
                     , DnsSecAlgorithm.RsaSha256 // Cryptographic algorithm used to create the signature.
                       , 4 // Labels: Number of labels in the original RRSIG-record name (used to validate wildcards).
@@ -80,8 +91,9 @@ namespace ArsoftTestServer
                     , DateTime.Now.AddMinutes(1) // Signature Expiration: When the signature expires.
                     , DateTime.Now // Signature Inception: When the signature was created.
                     , 0 // Key Tag: A short numeric value which can help quickly identify the DNSKEY-record which can be used to validate this signature.
+                        // identifiziert den unterzeichnenden DNSKEY, um zwischen mehreren Signaturen zu unterscheiden (engl. key tag)
                     , DomainName.Parse("example.com") // Signer's Name: Name of the DNSKEY-record which can be used to validate this signature.
-                    , new byte[] { 1, 2, 3 } // Signature: Cryptographic signature.
+                    , new byte[] { 1, 2, 3 } // Signature: Cryptographic signature.  (Base64)
                 )
             );
             

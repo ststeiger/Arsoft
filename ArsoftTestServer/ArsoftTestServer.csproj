@@ -12,6 +12,10 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ARSoft.CoreFX.Tools.Net\ARSoft.CoreFX.Tools.Net.csproj" />
     <ProjectReference Include="..\BouncyCastle\BouncyCastle.csproj" />

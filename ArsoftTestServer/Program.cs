@@ -10,14 +10,14 @@ namespace ArsoftTestServer
         public static void Main(string[] args)
         {
             // https://tools.ietf.org/html/rfc3110
-            
+
             // https://tools.ietf.org/html/rfc2539
             // https://tools.ietf.org/html/rfc3110
             // https://tools.ietf.org/html/rfc3757
             // https://www.rfc-editor.org/rfc/rfc4034.txt
             // https://tools.ietf.org/html/rfc4034#appendix-A.1
 
-            
+
             // https://metebalci.com/blog/a-minimum-complete-tutorial-of-dnssec/
             // https://www.icann.org/news/blog/changing-the-keys-to-the-domain-name-system-dns-root-zone
             // https://blog.cloudflare.com/dnssec-an-introduction/
@@ -25,8 +25,9 @@ namespace ArsoftTestServer
             // https://www.nic.ch/faqs/dnssec/details/
             // https://tools.ietf.org/html/rfc2535
             
-            
-            
+
+
+
             string foo = @"AQPSKmynfzW4kyBv015MUG2DeIQ3
             Cbl+BBZH4b/0PY1kxkmvHjcZc8no
             kfzj31GajIQKY+5CptLr3buXA10h
@@ -43,10 +44,10 @@ namespace ArsoftTestServer
             System.Console.WriteLine(foo);
 
 
-            
-            
-            
-            
+
+
+
+
             // System.Security.Cryptography.X509Certificates.X509Certificate2 cert2 = new System.Security.Cryptography.X509Certificates.X509Certificate2(byte[] rawData);
             // System.Security.Cryptography.X509Certificates.X509Certificate2 cert2 = DotNetUtilities.CreateX509Cert2("mycert");
             // SecurityKey secKey = new X509SecurityKey(cert2);
