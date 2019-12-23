@@ -59,7 +59,7 @@ namespace NetCoreTestApplication
             GenerateDsaKeyPair(Org.BouncyCastle.Security.SecureRandom random, int keystrength)
         {
             Org.BouncyCastle.Crypto.IAsymmetricCipherKeyPairGenerator keypairGen = new Org.BouncyCastle.Crypto.Generators.DsaKeyPairGenerator();
-            
+
             Org.BouncyCastle.Crypto.Generators.DsaParametersGenerator pGen = new Org.BouncyCastle.Crypto.Generators.DsaParametersGenerator();
             pGen.Init(keystrength, 80, random); //TODO:
             Org.BouncyCastle.Crypto.Parameters.DsaParameters parameters = pGen.GenerateParameters();
@@ -174,7 +174,7 @@ namespace NetCoreTestApplication
                     throw new System.NotImplementedException("Indirect | PrivateDns | PrivateOid");
             }
 
-            
+
             publicKey = Org.BouncyCastle.X509.SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keyPair.Public).GetEncoded();
             privateKey = Org.BouncyCastle.Pkcs.PrivateKeyInfoFactory.CreatePrivateKeyInfo(keyPair.Private).GetEncoded();
         }
@@ -191,7 +191,7 @@ namespace NetCoreTestApplication
             GenerateKeypair(DnsSecAlgorithm.RsaSha512, out privateKey, out publicKey);
             GenerateKeypair(DnsSecAlgorithm.EcDsaP256Sha256, out privateKey, out publicKey);
             GenerateKeypair(DnsSecAlgorithm.EccGost, out privateKey, out publicKey);
-            
+
             Org.BouncyCastle.Crypto.AsymmetricKeyParameter privKey = Org.BouncyCastle.Security.PrivateKeyFactory.CreateKey(privateKey);
             Org.BouncyCastle.Crypto.AsymmetricKeyParameter pubKey = Org.BouncyCastle.Security.PublicKeyFactory.CreateKey(publicKey);
         }
@@ -420,6 +420,39 @@ namespace NetCoreTestApplication
             // CDNSKEY and CDS - For a child zone requesting updates to DS record(s) in the parent zone.
 
 
+            // The first step towards securing a zone with DNSSEC 
+            // is to group all the records (on the same label?) with the same type into a resource record set(RRset). 
+            // It’s actually this full RRset that gets digitally signed, opposed to individual DNS records.
+            // Of course, this also means that you must request and validate all of the AAAA records 
+            // from a zone with the same label instead of validating only one of them.
+
+
+            // zone-signing key (ZSK)pair:
+            // the private portion of the key digitally signs each RRset in the zone, 
+            // while the public portion verifies the signature.
+            // a zone operator creates digital signatures for each RRset using the private ZSK 
+            // and stores them in their name server as RRSIG records.
+
+            // The zone operator also needs to make their public ZSK available by adding it to their name server in a DNSKEY record.
+
+            // the name server also returns the corresponding RRSIG. 
+            // The resolver can then pull the DNSKEY record containing the public ZSK from the name server.
+            // Together, the RRset, RRSIG, and public ZSK can validate the response.
+
+            // If we trust the zone - signing key in the DNSKEY record, we can trust all the records in the zone. 
+            // But, what if the zone - signing key was compromised? We need a way to validate the public ZSK.
+
+            // Key-Signing Keys (KSK): 
+            // The KSK validates the DNSKEY record in exactly the same way as our ZSK secured the rest of our RRsets. 
+            // It signs the public ZSK (which is stored in a DNSKEY record), creating an RRSIG for the DNSKEY.
+
+            // Just like the public ZSK, the name server publishes the public KSK in another DNSKEY record, 
+            // which gives us the DNSKEY RRset shown above. 
+            // Both the public KSK and public ZSK are signed by the private KSK. 
+            // Resolvers can then use the public KSK to validate the public ZSK.
+
+            // Complicating things further, the key-signing key is signed by itself, which doesn’t provide any additional trust.
+            // We need a way to connect the trust in our zone with its parent zone.
 
 
             // System.Security.Cryptography.X509Certificates.X509Certificate2 cert2 = new System.Security.Cryptography.X509Certificates.X509Certificate2(byte[] rawData);
