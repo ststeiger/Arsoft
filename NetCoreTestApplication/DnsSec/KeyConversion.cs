@@ -334,16 +334,16 @@ namespace ArsoftTestServer
     public class UnsupportedAlgorithmException : System.Exception
     {
 
-        public UnsupportedAlgorithmException(int alg)
+        public UnsupportedAlgorithmException(ARSoft.Tools.Net.Dns.DnsSecAlgorithm alg)
         { }
     }
 
     public class MalformedKeyException : System.Exception
     {
-        public MalformedKeyException(KEYBase r)
+        public MalformedKeyException(byte[] r, ARSoft.Tools.Net.Dns.DnsSecAlgorithm algorithm)
         { }
 
-        public MalformedKeyException(KEYBase r, System.IO.IOException e)
+        public MalformedKeyException(byte[] r, ARSoft.Tools.Net.Dns.DnsSecAlgorithm algorithm, System.IO.IOException e)
         { }
     }
 
@@ -358,42 +358,6 @@ namespace ArsoftTestServer
         public DNSSECException(Org.BouncyCastle.Security.GeneralSecurityException e)
         { }
     }
-
-
-
-    public class KEYBase
-    {
-
-        protected byte[] m_key;
-        protected int m_algorithm;
-
-
-        public KEYBase()
-        { }
-
-
-        public KEYBase(byte[] key, ARSoft.Tools.Net.Dns.DnsSecAlgorithm algorithm)
-        {
-            this.m_key = key;
-            this.m_algorithm = (int)algorithm;
-        }
-
-
-
-        // Returns the binary data representing the key
-        public byte[] getKey()
-        {
-            return this.m_key;
-        }
-
-        public int getAlgorithm()
-        {
-            return this.m_algorithm;
-        }
-
-
-    }
-
 
 
     // https://gist.github.com/wuyongzheng/0e2ed6d8a075153efcd3
@@ -606,10 +570,10 @@ namespace ArsoftTestServer
 
         // Builds a DNSKEY record from a PublicKey
         // https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
-        public static byte[] fromPublicKey(PublicKey key, int alg) // throws DNSSECException
+        public static byte[] fromPublicKey(PublicKey key, ARSoft.Tools.Net.Dns.DnsSecAlgorithm alg) // throws DNSSECException
         {
 
-            switch ((ARSoft.Tools.Net.Dns.DnsSecAlgorithm)alg)
+            switch (alg)
             {
                 case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaMd5:
                 case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha1:
@@ -764,9 +728,9 @@ namespace ArsoftTestServer
     public class KeyConversionTo
     {
 
-        private static PublicKey toRSAPublicKey(KEYBase r) // throws IOException, GeneralSecurityException 
+        private static PublicKey toRSAPublicKey(byte[] keyBytes) // throws IOException, GeneralSecurityException 
         {
-            DNSInput @in = new DNSInput(r.getKey());
+            DNSInput @in = new DNSInput(keyBytes);
 
             int exponentLength = @in.readU8();
             if (exponentLength == 0)
@@ -788,14 +752,14 @@ namespace ArsoftTestServer
         }
 
 
-        private static PublicKey toDSAPublicKey(KEYBase r) // throws IOException, GeneralSecurityException, MalformedKeyException 
+        private static PublicKey toDSAPublicKey(byte[] keyBytes) // throws IOException, GeneralSecurityException, MalformedKeyException 
         {
-            DNSInput @in = new DNSInput(r.getKey());
+            DNSInput @in = new DNSInput(keyBytes);
 
             int t = @in.readU8();
             if (t > 8)
             {
-                throw new MalformedKeyException(r);
+                throw new MalformedKeyException(keyBytes, ARSoft.Tools.Net.Dns.DnsSecAlgorithm.Dsa);
             }
 
             Org.BouncyCastle.Math.BigInteger q = Helpers.readBigInteger(@in, 20);
@@ -836,9 +800,9 @@ namespace ArsoftTestServer
 
         // https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
         // https://tools.ietf.org/html/rfc5933
-        private static PublicKey toECGOSTPublicKey(KEYBase r, ECKeyInfo keyinfo) // throws IOException, GeneralSecurityException 
+        private static PublicKey toECGOSTPublicKey(byte[] keyBytes, ECKeyInfo keyinfo) // throws IOException, GeneralSecurityException 
         {
-            DNSInput @in = new DNSInput(r.getKey());
+            DNSInput @in = new DNSInput(keyBytes);
 
             Org.BouncyCastle.Math.BigInteger x = Helpers.readBigIntegerLittleEndian(@in, keyinfo.length);
             Org.BouncyCastle.Math.BigInteger y = Helpers.readBigIntegerLittleEndian(@in, keyinfo.length);
@@ -915,8 +879,7 @@ namespace ArsoftTestServer
             // Org.BouncyCastle.Security.ParameterUtilities.CreateKeyParameter("name", new byte[] { });
             // Org.BouncyCastle.Security.ParameterUtilities.GenerateParameters("name", new Org.BouncyCastle.Security.SecureRandom());
             // Org.BouncyCastle.Security.PublicKeyFactory.CreateKey()
-
-
+            
 
             // Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters oara = new Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters("ECDH", q, Org.BouncyCastle.Asn1.Sec.SecObjectIdentifiers.SecP521r1);
 
@@ -924,9 +887,9 @@ namespace ArsoftTestServer
         }
 
 
-        private static PublicKey toECDSAPublicKey(KEYBase r, ECKeyInfo keyinfo) // throws IOException, GeneralSecurityException 
+        private static PublicKey toECDSAPublicKey(byte[] keyBytes, ECKeyInfo keyinfo) // throws IOException, GeneralSecurityException 
         {
-            DNSInput @in = new DNSInput(r.getKey());
+            DNSInput @in = new DNSInput(keyBytes);
 
             // RFC 6605 Section 4
             Org.BouncyCastle.Math.BigInteger x = Helpers.readBigInteger(@in, keyinfo.length);
@@ -974,35 +937,35 @@ namespace ArsoftTestServer
 
         // Converts a KEY/DNSKEY record into a PublicKey 
         // https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
-        public static PublicKey toPublicKey(KEYBase r) // throws DNSSECException
+        public static PublicKey toPublicKey(byte[] keyBytes, ARSoft.Tools.Net.Dns.DnsSecAlgorithm algorithm) // throws DNSSECException
         {
-            int alg = r.getAlgorithm();
+            
             try
             {
-                switch ((ARSoft.Tools.Net.Dns.DnsSecAlgorithm)alg)
+                switch (algorithm)
                 {
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaMd5:
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha1:
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha1Nsec3Sha1:
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha256:
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha512:
-                        return toRSAPublicKey(r);
+                        return toRSAPublicKey(keyBytes);
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.Dsa:
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.DsaNsec3Sha1:
-                        return toDSAPublicKey(r);
+                        return toDSAPublicKey(keyBytes);
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.EccGost:
-                        return toECGOSTPublicKey(r, ECKeyInfo.GOST);
+                        return toECGOSTPublicKey(keyBytes, ECKeyInfo.GOST);
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.EcDsaP256Sha256:
-                        return toECDSAPublicKey(r, ECKeyInfo.ECDSA_P256);
+                        return toECDSAPublicKey(keyBytes, ECKeyInfo.ECDSA_P256);
                     case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.EcDsaP384Sha384:
-                        return toECDSAPublicKey(r, ECKeyInfo.ECDSA_P384);
+                        return toECDSAPublicKey(keyBytes, ECKeyInfo.ECDSA_P384);
                     default:
-                        throw new UnsupportedAlgorithmException(alg);
+                        throw new UnsupportedAlgorithmException(algorithm);
                 }
             }
             catch (System.IO.IOException e)
             {
-                throw new MalformedKeyException(r, e);
+                throw new MalformedKeyException(keyBytes, algorithm, e);
             }
             catch (Org.BouncyCastle.Security.GeneralSecurityException e)
             {
