@@ -101,7 +101,8 @@ namespace ARSoft.Tools.Net.Dns
 		/// <param name="keyTag"> Key tag </param>
 		/// <param name="signersName"> Domain name of generator of the signature </param>
 		/// <param name="signature"> Binary data of the signature </param>
-		public RrSigRecord(DomainName name, RecordClass recordClass, int timeToLive, RecordType typeCovered, DnsSecAlgorithm algorithm, byte labels, int originalTimeToLive, DateTime signatureExpiration, DateTime signatureInception, ushort keyTag, DomainName signersName, byte[] signature)
+		public RrSigRecord(DomainName name, RecordClass recordClass, int timeToLive, RecordType typeCovered, DnsSecAlgorithm algorithm, byte labels
+			, int originalTimeToLive, DateTime signatureExpiration, DateTime signatureInception, ushort keyTag, DomainName signersName, byte[] signature)
 			: base(name, RecordType.RrSig, recordClass, timeToLive)
 		{
 			TypeCovered = typeCovered;

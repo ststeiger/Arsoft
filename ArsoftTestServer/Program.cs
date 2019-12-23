@@ -1,7 +1,7 @@
 ﻿
 namespace ArsoftTestServer
 {
-
+    
 
     public class Program
     {
