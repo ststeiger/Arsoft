@@ -1,13 +1,5 @@
 ﻿
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-
-using ARSoft.Tools.Net;
 using ARSoft.Tools.Net.Dns;
-using ARSoft.Tools.Net.Dns.DynamicUpdate;
 
 
 namespace ArsoftTestServer
@@ -23,11 +15,12 @@ namespace ArsoftTestServer
         // http://stackoverflow.com/questions/2669841/how-to-get-mx-records-for-a-dns-name-with-system-net-dns
         public static void GetExchangeDomainName()
         {
-            var response = DnsClient.Default.Resolve(ARSoft.Tools.Net.DomainName.Parse("gmail.com"), RecordType.Mx);
-            var records = response.AnswerRecords.OfType<MxRecord>();
-            foreach (var record in records)
+            DnsMessage response = DnsClient.Default.Resolve(ARSoft.Tools.Net.DomainName.Parse("gmail.com"), RecordType.Mx);
+
+            System.Collections.Generic.IEnumerable<MxRecord> records = System.Linq.Enumerable.OfType<MxRecord>(response.AnswerRecords);
+            foreach (MxRecord record in records)
             {
-                Console.WriteLine(record.ExchangeDomainName);
+                System.Console.WriteLine(record.ExchangeDomainName);
             }
         }
 
@@ -35,10 +28,10 @@ namespace ArsoftTestServer
         // Get addresses for a domain name(IPv4)
         public static void Test1()
         {
-            DnsMessage dnsMessage = DnsClient.Default.Resolve(DomainName.Parse("www.example.com"), RecordType.A);
+            DnsMessage dnsMessage = DnsClient.Default.Resolve(ARSoft.Tools.Net.DomainName.Parse("www.example.com"), RecordType.A);
             if ((dnsMessage == null) || ((dnsMessage.ReturnCode != ReturnCode.NoError) && (dnsMessage.ReturnCode != ReturnCode.NxDomain)))
             {
-                throw new Exception("DNS request failed");
+                throw new System.Exception("DNS request failed");
             }
             else
             {
@@ -47,7 +40,7 @@ namespace ArsoftTestServer
                     ARecord aRecord = dnsRecord as ARecord;
                     if (aRecord != null)
                     {
-                        Console.WriteLine(aRecord.Address.ToString());
+                        System.Console.WriteLine(aRecord.Address.ToString());
                     }
                 }
             }
@@ -57,10 +50,10 @@ namespace ArsoftTestServer
         // Get mail exchangers for a domain name
         public static void Test2()
         {
-            DnsMessage dnsMessage = DnsClient.Default.Resolve(DomainName.Parse("example.com"), RecordType.Mx);
+            DnsMessage dnsMessage = DnsClient.Default.Resolve(ARSoft.Tools.Net.DomainName.Parse("example.com"), RecordType.Mx);
             if ((dnsMessage == null) || ((dnsMessage.ReturnCode != ReturnCode.NoError) && (dnsMessage.ReturnCode != ReturnCode.NxDomain)))
             {
-                throw new Exception("DNS request failed");
+                throw new System.Exception("DNS request failed");
             }
             else
             {
@@ -69,7 +62,7 @@ namespace ArsoftTestServer
                     MxRecord mxRecord = dnsRecord as MxRecord;
                     if (mxRecord != null)
                     {
-                        Console.WriteLine(mxRecord.ExchangeDomainName);
+                        System.Console.WriteLine(mxRecord.ExchangeDomainName);
                     }
                 }
             }
@@ -79,10 +72,14 @@ namespace ArsoftTestServer
         // Get reverse lookup adress for an ip address
         public static void Test3()
         {
-            DnsMessage dnsMessage = DnsClient.Default.Resolve(IPAddress.Parse("192.0.2.1").GetReverseLookupDomain(), RecordType.Ptr);
+            ARSoft.Tools.Net.DomainName lookedUpDomainName = ARSoft.Tools.Net.IPAddressExtensions.GetReverseLookupDomain(
+                System.Net.IPAddress.Parse("192.0.2.1")
+            );
+
+            DnsMessage dnsMessage = DnsClient.Default.Resolve(lookedUpDomainName, RecordType.Ptr);
             if ((dnsMessage == null) || ((dnsMessage.ReturnCode != ReturnCode.NoError) && (dnsMessage.ReturnCode != ReturnCode.NxDomain)))
             {
-                throw new Exception("DNS request failed");
+                throw new System.Exception("DNS request failed");
             }
             else
             {
@@ -91,7 +88,7 @@ namespace ArsoftTestServer
                     PtrRecord ptrRecord = dnsRecord as PtrRecord;
                     if (ptrRecord != null)
                     {
-                        Console.WriteLine(ptrRecord.PointerDomainName);
+                        System.Console.WriteLine(ptrRecord.PointerDomainName);
                     }
                 }
             }
@@ -101,16 +98,21 @@ namespace ArsoftTestServer
         // Send dynamic update
         public static void Test4()
         {
-            DnsUpdateMessage msg = new DnsUpdateMessage()
+            ARSoft.Tools.Net.Dns.DynamicUpdate.DnsUpdateMessage msg = new ARSoft.Tools.Net.Dns.DynamicUpdate.DnsUpdateMessage()
             {
-                ZoneName = DomainName.Parse("example.com")
+                ZoneName = ARSoft.Tools.Net.DomainName.Parse("example.com")
             };
 
-msg.Updates.Add(new DeleteRecordUpdate(DomainName.Parse("dyn.example.com"), RecordType.A));
-            msg.Updates.Add(new AddRecordUpdate(new ARecord(DomainName.Parse("dyn.example.com"), 300, IPAddress.Parse("192.0.2.42"))));
-            msg.TSigOptions = new TSigRecord(DomainName.Parse("my-key"), TSigAlgorithm.Md5, DateTime.Now, new TimeSpan(0, 5, 0), msg.TransactionID, ReturnCode.NoError, null, Convert.FromBase64String("0jnu3SdsMvzzlmTDPYRceA=="));
+            msg.Updates.Add(new ARSoft.Tools.Net.Dns.DynamicUpdate.DeleteRecordUpdate(ARSoft.Tools.Net.DomainName.Parse("dyn.example.com"), RecordType.A));
+            msg.Updates.Add(new ARSoft.Tools.Net.Dns.DynamicUpdate.AddRecordUpdate(
+                new ARecord(ARSoft.Tools.Net.DomainName.Parse("dyn.example.com"), 300, System.Net.IPAddress.Parse("192.0.2.42"))));
+            msg.TSigOptions = new TSigRecord(ARSoft.Tools.Net.DomainName.Parse("my-key"), TSigAlgorithm.Md5, System.DateTime.Now
+                , new System.TimeSpan(0, 5, 0), msg.TransactionID
+                , ReturnCode.NoError, null
+                , System.Convert.FromBase64String("0jnu3SdsMvzzlmTDPYRceA==")
+            );
 
-            DnsUpdateMessage dnsResult = new DnsClient(IPAddress.Parse("192.0.2.1"), 5000).SendUpdate(msg);
+            ARSoft.Tools.Net.Dns.DynamicUpdate.DnsUpdateMessage dnsResult = new DnsClient(System.Net.IPAddress.Parse("192.0.2.1"), 5000).SendUpdate(msg);
         } // End Sub Test4 
 
 

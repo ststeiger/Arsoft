@@ -83,7 +83,7 @@ namespace NetCoreTestApplication
             
             
             // ArsoftTestServer.KeyConversion.fromPublicKey()
-            KEYBase keyRecord = new KEYBase(keyBytes, (int)DnsSecAlgorithm.RsaSha1);
+            KEYBase keyRecord = new KEYBase(keyBytes, DnsSecAlgorithm.RsaSha1);
             PublicKey pk = ArsoftTestServer.KeyConversionTo.toPublicKey(keyRecord);
             System.Console.WriteLine(pk);
             

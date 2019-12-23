@@ -1,8 +1,4 @@
 ﻿
-using ARSoft.Tools.Net.Dns;
-using Org.BouncyCastle.Math;
-
-
 namespace ArsoftTestServer
 {
 
@@ -365,23 +361,35 @@ namespace ArsoftTestServer
 
 
 
-    // KEYBase.java
     public class KEYBase
     {
+
+        protected byte[] m_key;
+        protected int m_algorithm;
+
+
+        public KEYBase()
+        { }
+
+
+        public KEYBase(byte[] key, ARSoft.Tools.Net.Dns.DnsSecAlgorithm algorithm)
+        {
+            this.m_key = key;
+            this.m_algorithm = (int)algorithm;
+        }
+
+
 
         // Returns the binary data representing the key
         public byte[] getKey()
         {
-            // return key;
-            return null;
+            return this.m_key;
         }
 
         public int getAlgorithm()
         {
-            return 123;
+            return this.m_algorithm;
         }
-
-
 
 
     }
@@ -400,9 +408,9 @@ namespace ArsoftTestServer
         public Org.BouncyCastle.Crypto.Parameters.ECDomainParameters spec;
 
 
-        private static BigInteger FromHex(string hex)
+        private static Org.BouncyCastle.Math.BigInteger FromHex(string hex)
         {
-            return new BigInteger(1, Org.BouncyCastle.Utilities.Encoders.Hex.Decode(hex));
+            return new Org.BouncyCastle.Math.BigInteger(1, Org.BouncyCastle.Utilities.Encoders.Hex.Decode(hex));
         }
 
 
@@ -416,13 +424,13 @@ namespace ArsoftTestServer
             string n_str)
         {
             this.length = length;
-            p = new BigInteger(p_str, 16);
-            a = new BigInteger(a_str, 16);
-            b = new BigInteger(b_str, 16);
-            gx = new BigInteger(gx_str, 16);
-            gy = new BigInteger(gy_str, 16);
-            n = new BigInteger(n_str, 16);
-            BigInteger h = BigInteger.One;
+            p = new Org.BouncyCastle.Math.BigInteger(p_str, 16);
+            a = new Org.BouncyCastle.Math.BigInteger(a_str, 16);
+            b = new Org.BouncyCastle.Math.BigInteger(b_str, 16);
+            gx = new Org.BouncyCastle.Math.BigInteger(gx_str, 16);
+            gy = new Org.BouncyCastle.Math.BigInteger(gy_str, 16);
+            n = new Org.BouncyCastle.Math.BigInteger(n_str, 16);
+            Org.BouncyCastle.Math.BigInteger h = Org.BouncyCastle.Math.BigInteger.One;
 
             this.curve = new Org.BouncyCastle.Math.EC.FpCurve(p, a, b, n, h);
 
@@ -501,10 +509,10 @@ namespace ArsoftTestServer
             Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters kp = key.PublicKey;
 
             // BigInteger exponent = key.getPublicExponent();
-            BigInteger exponent = kp.Exponent;
+            Org.BouncyCastle.Math.BigInteger exponent = kp.Exponent;
 
             // BigInteger modulus = key.getModulus();
-            BigInteger modulus = kp.Modulus;
+            Org.BouncyCastle.Math.BigInteger modulus = kp.Modulus;
 
 
             int exponentLength = Helpers.BigIntegerLength(exponent);
@@ -534,13 +542,13 @@ namespace ArsoftTestServer
 
 
             // BigInteger q = key.getParams().getQ();
-            BigInteger q = dp.Parameters.Q;
+            Org.BouncyCastle.Math.BigInteger q = dp.Parameters.Q;
             // BigInteger p = key.getParams().getP();
-            BigInteger p = dp.Parameters.P;
+            Org.BouncyCastle.Math.BigInteger p = dp.Parameters.P;
             // BigInteger g = key.getParams().getG();
-            BigInteger g = dp.Parameters.G;
+            Org.BouncyCastle.Math.BigInteger g = dp.Parameters.G;
             // BigInteger y = key.getY();
-            BigInteger y = dp.Y;
+            Org.BouncyCastle.Math.BigInteger y = dp.Y;
 
 
             int t = (p.ToByteArray().Length - 64) / 8;
@@ -563,10 +571,10 @@ namespace ArsoftTestServer
             Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters publicParams = key.PublicKey;
 
             //BigInteger x = key.getW().getAffineX();
-            BigInteger x = publicParams.Q.AffineXCoord.ToBigInteger();
+            Org.BouncyCastle.Math.BigInteger x = publicParams.Q.AffineXCoord.ToBigInteger();
 
             //BigInteger y = key.getW().getAffineY();
-            BigInteger y = publicParams.Q.AffineYCoord.ToBigInteger();
+            Org.BouncyCastle.Math.BigInteger y = publicParams.Q.AffineYCoord.ToBigInteger();
 
 
             Helpers.writePaddedBigIntegerLittleEndian(@out, x, keyinfo.length);
@@ -584,10 +592,10 @@ namespace ArsoftTestServer
 
 
             // BigInteger x = key.getW().getAffineX();
-            BigInteger x = publicParams.Q.AffineXCoord.ToBigInteger();
+            Org.BouncyCastle.Math.BigInteger x = publicParams.Q.AffineXCoord.ToBigInteger();
 
             // BigInteger y = key.getW().getAffineY();
-            BigInteger y = publicParams.Q.AffineYCoord.ToBigInteger();
+            Org.BouncyCastle.Math.BigInteger y = publicParams.Q.AffineYCoord.ToBigInteger();
 
             Helpers.writePaddedBigInteger(@out, x, keyinfo.length);
             Helpers.writePaddedBigInteger(@out, y, keyinfo.length);
@@ -601,39 +609,39 @@ namespace ArsoftTestServer
         public static byte[] fromPublicKey(PublicKey key, int alg) // throws DNSSECException
         {
 
-            switch ((DnsSecAlgorithm)alg)
+            switch ((ARSoft.Tools.Net.Dns.DnsSecAlgorithm)alg)
             {
-                case DnsSecAlgorithm.RsaMd5:
-                case DnsSecAlgorithm.RsaSha1:
-                case DnsSecAlgorithm.RsaSha1Nsec3Sha1:
-                case DnsSecAlgorithm.RsaSha256:
-                case DnsSecAlgorithm.RsaSha512:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaMd5:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha1:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha1Nsec3Sha1:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha256:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha512:
                     if (!(key is RSAPublicKey))
                     {
                         throw new IncompatibleKeyException();
                     }
 
                     return fromRSAPublicKey((RSAPublicKey)key);
-                case DnsSecAlgorithm.Dsa:
-                case DnsSecAlgorithm.DsaNsec3Sha1:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.Dsa:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.DsaNsec3Sha1:
                     if (!(key is DSAPublicKey))
                     {
                         throw new IncompatibleKeyException();
                     }
                     return fromDSAPublicKey((DSAPublicKey)key);
-                case DnsSecAlgorithm.EccGost:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.EccGost:
                     if (!(key is ECPublicKey))
                     {
                         throw new IncompatibleKeyException();
                     }
                     return fromECGOSTPublicKey((ECPublicKey)key, ECKeyInfo.GOST);
-                case DnsSecAlgorithm.EcDsaP256Sha256:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.EcDsaP256Sha256:
                     if (!(key is ECPublicKey))
                     {
                         throw new IncompatibleKeyException();
                     }
                     return fromECDSAPublicKey((ECPublicKey)key, ECKeyInfo.ECDSA_P256);
-                case DnsSecAlgorithm.EcDsaP384Sha384:
+                case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.EcDsaP384Sha384:
                     if (!(key is ECPublicKey))
                     {
                         throw new IncompatibleKeyException();
@@ -653,22 +661,22 @@ namespace ArsoftTestServer
 
     internal class Helpers
     {
-        internal static int BigIntegerLength(BigInteger i)
+        internal static int BigIntegerLength(Org.BouncyCastle.Math.BigInteger i)
         {
             return (i.BitLength + 7) / 8;
         }
 
 
-        internal static BigInteger readBigInteger(DNSInput @in, int len) // throws IOException
+        internal static Org.BouncyCastle.Math.BigInteger readBigInteger(DNSInput @in, int len) // throws IOException
         {
             byte[] b = @in.readByteArray(len);
-            return new BigInteger(1, b);
+            return new Org.BouncyCastle.Math.BigInteger(1, b);
         }
 
-        internal static BigInteger readBigInteger(DNSInput @in)
+        internal static Org.BouncyCastle.Math.BigInteger readBigInteger(DNSInput @in)
         {
             byte[] b = @in.readByteArray();
-            return new BigInteger(1, b);
+            return new Org.BouncyCastle.Math.BigInteger(1, b);
         }
 
         private static byte[] trimByteArray(byte[] array)
@@ -686,14 +694,14 @@ namespace ArsoftTestServer
         }
 
 
-        internal static void writeBigInteger(DNSOutput @out, BigInteger val)
+        internal static void writeBigInteger(DNSOutput @out, Org.BouncyCastle.Math.BigInteger val)
         {
 
             byte[] b = trimByteArray(val.ToByteArray());
             @out.writeByteArray(b);
         }
 
-        internal static void writePaddedBigInteger(DNSOutput @out, BigInteger val, int len)
+        internal static void writePaddedBigInteger(DNSOutput @out, Org.BouncyCastle.Math.BigInteger val, int len)
         {
             byte[] b = trimByteArray(val.ToByteArray());
 
@@ -723,15 +731,15 @@ namespace ArsoftTestServer
             }
         }
 
-        internal static BigInteger readBigIntegerLittleEndian(DNSInput @in, int len) // throws IOException
+        internal static Org.BouncyCastle.Math.BigInteger readBigIntegerLittleEndian(DNSInput @in, int len) // throws IOException
         {
 
             byte[] b = @in.readByteArray(len);
             reverseByteArray(b);
-            return new BigInteger(1, b);
+            return new Org.BouncyCastle.Math.BigInteger(1, b);
         }
 
-        internal static void writePaddedBigIntegerLittleEndian(DNSOutput @out, BigInteger val, int len)
+        internal static void writePaddedBigIntegerLittleEndian(DNSOutput @out, Org.BouncyCastle.Math.BigInteger val, int len)
         {
             byte[] b = trimByteArray(val.ToByteArray());
 
@@ -766,8 +774,8 @@ namespace ArsoftTestServer
                 exponentLength = @in.readU16();
             }
 
-            BigInteger exponent = Helpers.readBigInteger(@in, exponentLength);
-            BigInteger modulus = Helpers.readBigInteger(@in);
+            Org.BouncyCastle.Math.BigInteger exponent = Helpers.readBigInteger(@in, exponentLength);
+            Org.BouncyCastle.Math.BigInteger modulus = Helpers.readBigInteger(@in);
             /*
             KeyFactory factory = KeyFactory.getInstance("RSA");
             return factory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
@@ -790,10 +798,10 @@ namespace ArsoftTestServer
                 throw new MalformedKeyException(r);
             }
 
-            BigInteger q = Helpers.readBigInteger(@in, 20);
-            BigInteger p = Helpers.readBigInteger(@in, 64 + t * 8);
-            BigInteger g = Helpers.readBigInteger(@in, 64 + t * 8);
-            BigInteger y = Helpers.readBigInteger(@in, 64 + t * 8);
+            Org.BouncyCastle.Math.BigInteger q = Helpers.readBigInteger(@in, 20);
+            Org.BouncyCastle.Math.BigInteger p = Helpers.readBigInteger(@in, 64 + t * 8);
+            Org.BouncyCastle.Math.BigInteger g = Helpers.readBigInteger(@in, 64 + t * 8);
+            Org.BouncyCastle.Math.BigInteger y = Helpers.readBigInteger(@in, 64 + t * 8);
             /*
             KeyFactory factory = KeyFactory.getInstance("DSA");
             return factory.generatePublic(new DSAPublicKeySpec(y, p, q, g));
@@ -832,8 +840,8 @@ namespace ArsoftTestServer
         {
             DNSInput @in = new DNSInput(r.getKey());
 
-            BigInteger x = Helpers.readBigIntegerLittleEndian(@in, keyinfo.length);
-            BigInteger y = Helpers.readBigIntegerLittleEndian(@in, keyinfo.length);
+            Org.BouncyCastle.Math.BigInteger x = Helpers.readBigIntegerLittleEndian(@in, keyinfo.length);
+            Org.BouncyCastle.Math.BigInteger y = Helpers.readBigIntegerLittleEndian(@in, keyinfo.length);
 
             // OID to be found in Org.BouncyCastle.Security.GeneratorUtilities.GetKeyPairGenerator("ECGOST3410");
             // Org.BouncyCastle.Crypto.Parameters.ECDomainParameters domain = Org.BouncyCastle.Asn1.CryptoPro.ECGost3410NamedCurves.GetByOid(Org.BouncyCastle.Asn1.CryptoPro.CryptoProObjectIdentifiers.GostR3410x94CryptoProA);
@@ -866,7 +874,9 @@ namespace ArsoftTestServer
 
         // https://stackoverflow.com/questions/17439732/recreating-keys-ecpublickeyparameters-in-c-sharp-with-bouncycastle
         // TODO: find curve name...
-        private static Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters CreateEcPublicKeyParameters(BigInteger xx, BigInteger yy)
+        private static Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters CreateEcPublicKeyParameters(
+            Org.BouncyCastle.Math.BigInteger xx
+            , Org.BouncyCastle.Math.BigInteger yy)
         {
             // Org.BouncyCastle.Math.EC.ECPoint q = new Org.BouncyCastle.Math.EC.ECPoint(x, y);
             // Org.BouncyCastle.Crypto.Tls.NamedCurve.secp224k1
@@ -919,8 +929,8 @@ namespace ArsoftTestServer
             DNSInput @in = new DNSInput(r.getKey());
 
             // RFC 6605 Section 4
-            BigInteger x = Helpers.readBigInteger(@in, keyinfo.length);
-            BigInteger y = Helpers.readBigInteger(@in, keyinfo.length);
+            Org.BouncyCastle.Math.BigInteger x = Helpers.readBigInteger(@in, keyinfo.length);
+            Org.BouncyCastle.Math.BigInteger y = Helpers.readBigInteger(@in, keyinfo.length);
 
 
             // Org.BouncyCastle.Asn1.X9.X9ECParameters ecParams = Org.BouncyCastle.Asn1.Sec.SecNamedCurves.GetByName("secp521r1");
@@ -969,22 +979,22 @@ namespace ArsoftTestServer
             int alg = r.getAlgorithm();
             try
             {
-                switch ((DnsSecAlgorithm)alg)
+                switch ((ARSoft.Tools.Net.Dns.DnsSecAlgorithm)alg)
                 {
-                    case DnsSecAlgorithm.RsaMd5:
-                    case DnsSecAlgorithm.RsaSha1:
-                    case DnsSecAlgorithm.RsaSha1Nsec3Sha1:
-                    case DnsSecAlgorithm.RsaSha256:
-                    case DnsSecAlgorithm.RsaSha512:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaMd5:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha1:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha1Nsec3Sha1:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha256:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.RsaSha512:
                         return toRSAPublicKey(r);
-                    case DnsSecAlgorithm.Dsa:
-                    case DnsSecAlgorithm.DsaNsec3Sha1:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.Dsa:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.DsaNsec3Sha1:
                         return toDSAPublicKey(r);
-                    case DnsSecAlgorithm.EccGost:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.EccGost:
                         return toECGOSTPublicKey(r, ECKeyInfo.GOST);
-                    case DnsSecAlgorithm.EcDsaP256Sha256:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.EcDsaP256Sha256:
                         return toECDSAPublicKey(r, ECKeyInfo.ECDSA_P256);
-                    case DnsSecAlgorithm.EcDsaP384Sha384:
+                    case ARSoft.Tools.Net.Dns.DnsSecAlgorithm.EcDsaP384Sha384:
                         return toECDSAPublicKey(r, ECKeyInfo.ECDSA_P384);
                     default:
                         throw new UnsupportedAlgorithmException(alg);
@@ -1002,7 +1012,6 @@ namespace ArsoftTestServer
 
 
     } // End Class KeyConversionTo 
-
 
 
 } // End Namespace 

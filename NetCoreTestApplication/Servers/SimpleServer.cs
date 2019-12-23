@@ -1,13 +1,4 @@
 ﻿
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-
-using ARSoft.Tools.Net;
-using ARSoft.Tools.Net.Dns;
-
-
 namespace ArsoftTestServer
 {
 
@@ -17,27 +8,27 @@ namespace ArsoftTestServer
     {
 
 
-        private static async Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
+        private static async System.Threading.Tasks.Task OnQueryReceived(object sender, ARSoft.Tools.Net.Dns.QueryReceivedEventArgs e)
         {
-            DnsMessage query = e.Query as DnsMessage;
+            ARSoft.Tools.Net.Dns.DnsMessage query = e.Query as ARSoft.Tools.Net.Dns.DnsMessage;
 
             if (query == null)
                 return;
 
-            DnsMessage response = query.CreateResponseInstance();
+            ARSoft.Tools.Net.Dns.DnsMessage response = query.CreateResponseInstance();
 
 
             // check for valid query
             if ((query.Questions.Count == 1)
-                && (query.Questions[0].RecordType == RecordType.Txt)
-                && (query.Questions[0].Name.Equals(DomainName.Parse("example.com"))))
+                && (query.Questions[0].RecordType == ARSoft.Tools.Net.Dns.RecordType.Txt)
+                && (query.Questions[0].Name.Equals(ARSoft.Tools.Net.DomainName.Parse("example.com"))))
             {
-                response.ReturnCode = ReturnCode.NoError;
-                response.AnswerRecords.Add(new TxtRecord(DomainName.Parse("example.com"), 3600, "Hello world"));
+                response.ReturnCode = ARSoft.Tools.Net.Dns.ReturnCode.NoError;
+                response.AnswerRecords.Add(new ARSoft.Tools.Net.Dns.TxtRecord(ARSoft.Tools.Net.DomainName.Parse("example.com"), 3600, "Hello world"));
             }
             else
             {
-                response.ReturnCode = ReturnCode.ServerFailure;
+                response.ReturnCode = ARSoft.Tools.Net.Dns.ReturnCode.ServerFailure;
             }
 
             // set the response
@@ -47,14 +38,14 @@ namespace ArsoftTestServer
 
         public static void Test()
         {
-            
-            using (DnsServer server = new DnsServer(10, 10))
+
+            using (ARSoft.Tools.Net.Dns.DnsServer server = new ARSoft.Tools.Net.Dns.DnsServer(10, 10))
             {
                 server.QueryReceived += OnQueryReceived;
 
                 server.Start();
 
-                Console.WriteLine("Press any key to stop server");
+                System.Console.WriteLine("Press any key to stop server");
                 System.Console.ReadKey();
             } // End Using server 
 

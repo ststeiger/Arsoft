@@ -1,13 +1,4 @@
 ﻿
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-
-using ARSoft.Tools.Net.Dns;
-
-
 namespace ArsoftTestServer
 {
 
@@ -16,28 +7,28 @@ namespace ArsoftTestServer
     {
         public static void Test()
         {
-            using (DnsServer server = new DnsServer(IPAddress.Any, 10, 10))
+            using (ARSoft.Tools.Net.Dns.DnsServer server = new ARSoft.Tools.Net.Dns.DnsServer(System.Net.IPAddress.Any, 10, 10))
             {
                 server.ClientConnected += OnClientConnected;
                 server.QueryReceived += OnQueryReceived;
 
                 server.Start();
 
-                Console.WriteLine("Press any key to stop server");
-                Console.ReadLine();
+                System.Console.WriteLine("Press any key to stop server");
+                System.Console.ReadLine();
             } // End Using server 
 
         } // End Sub Test 
 
 
-        static async Task OnClientConnected(object sender, ClientConnectedEventArgs e)
+        static async System.Threading.Tasks.Task OnClientConnected(object sender, ARSoft.Tools.Net.Dns.ClientConnectedEventArgs e)
         {
-            if (!IPAddress.IsLoopback(e.RemoteEndpoint.Address))
+            if (!System.Net.IPAddress.IsLoopback(e.RemoteEndpoint.Address))
                 e.RefuseConnect = true;
         } // End Function OnClientConnected 
 
 
-        static async Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
+        static async System.Threading.Tasks.Task OnQueryReceived(object sender, ARSoft.Tools.Net.Dns.QueryReceivedEventArgs e)
         {
             // process query as you like
         } // End Function OnQueryReceived 

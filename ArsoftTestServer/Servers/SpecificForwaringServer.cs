@@ -1,8 +1,4 @@
 ﻿
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
-
-using ARSoft.Tools.Net;
 using ARSoft.Tools.Net.Dns;
 
 
@@ -85,20 +81,20 @@ namespace ArsoftTestServer
         } // End Sub Test 
 
 
-        static async Task OnClientConnected(object sender, ClientConnectedEventArgs e)
+        static async System.Threading.Tasks.Task OnClientConnected(object sender, ClientConnectedEventArgs e)
         {
             // local only
             if (!System.Net.IPAddress.IsLoopback(e.RemoteEndpoint.Address))
                 e.RefuseConnect = true;
 
             // await Task.CompletedTask;
-            await Task.FromResult(e);
+            await System.Threading.Tasks.Task.FromResult(e);
         } // End Function OnClientConnected 
 
 
         // nslookup somewhere.com some.dns.server
         // nslookup somewhere.com 127.0.0.1
-        static async Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
+        static async System.Threading.Tasks.Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
         {
             // if (!IPAddress.IsLoopback(e.RemoteEndpoint.Address))
             DnsMessage query = e.Query as DnsMessage;
@@ -145,7 +141,7 @@ namespace ArsoftTestServer
         } // End Class DbDnsRecord 
 
 
-        static async Task<bool> ResolveMessage(DnsMessage query, QueryReceivedEventArgs e, DnsMessage response)
+        static async System.Threading.Tasks.Task<bool> ResolveMessage(DnsMessage query, QueryReceivedEventArgs e, DnsMessage response)
         {
             DbDnsRecord rec = null;
 
@@ -213,10 +209,10 @@ AND T_Records.REC_Name = @in_recordName
                         //  , DomainName responsibleName, uint serialNumber, int refreshInterval
                         //  , int retryInterval, int expireInterval, int negativeCachingTTL)
                         record = new ARSoft.Tools.Net.Dns.SoaRecord(
-                                  DomainName.Parse(rec.REC_Name)
+                                  ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name)
                                 , rec.REC_TTL.Value
-                                , DomainName.Parse(rec.REC_Content)
-                                , DomainName.Parse(rec.REC_ResponsibleName)
+                                , ARSoft.Tools.Net.DomainName.Parse(rec.REC_Content)
+                                , ARSoft.Tools.Net.DomainName.Parse(rec.REC_ResponsibleName)
                                 , rec.REC_SerialNumber.Value
                                 , rec.REC_RefreshInterval.Value 
                                 , rec.REC_RetryInterval.Value
@@ -225,11 +221,11 @@ AND T_Records.REC_Name = @in_recordName
                         );
                         break;
                     case RecordType.Ns:
-                        record = new ARSoft.Tools.Net.Dns.NsRecord(DomainName.Parse(rec.REC_Name), ttl, DomainName.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.NsRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), ttl, ARSoft.Tools.Net.DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.Srv:
                         // SrvRecord(DomainName name, int timeToLive, ushort priority, ushort weight, ushort port, DomainName target)
-                        record = new ARSoft.Tools.Net.Dns.SrvRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, (ushort) rec.REC_Prio.Value, (ushort) rec.REC_Weight.Value, (ushort) rec.REC_Port.Value, DomainName.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.SrvRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, (ushort) rec.REC_Prio.Value, (ushort) rec.REC_Weight.Value, (ushort) rec.REC_Port.Value, ARSoft.Tools.Net.DomainName.Parse(rec.REC_Content));
                         break;
                     // https://www.openafs.org/
                     // https://en.wikipedia.org/wiki/OpenAFS
@@ -238,7 +234,7 @@ AND T_Records.REC_Name = @in_recordName
                     case RecordType.Afsdb:
                         // http://www.rjsystems.nl/en/2100-dns-discovery-openafs.php
 
-                        record = new ARSoft.Tools.Net.Dns.AfsdbRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, (AfsdbRecord.AfsSubType) (uint)rec.REC_AfsSubType.Value, DomainName.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.AfsdbRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, (AfsdbRecord.AfsSubType) (uint)rec.REC_AfsSubType.Value, ARSoft.Tools.Net.DomainName.Parse(rec.REC_Content));
                         break;
                     // A DNS-based Authentication of Named Entities (DANE) method
                     // for publishing and locating OpenPGP public keys in DNS
@@ -255,26 +251,26 @@ AND T_Records.REC_Name = @in_recordName
                         // Normally the "Standard" output format should be used. 
                         // The "Generic Encoding" output format is provided to help work 
                         // with older DNS software that does not yet understand the OPENPGPKEY record type.
-                        record = new ARSoft.Tools.Net.Dns.OpenPGPKeyRecord(DomainName.Parse(rec.REC_Name), ttl, publicKey);
+                        record = new ARSoft.Tools.Net.Dns.OpenPGPKeyRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), ttl, publicKey);
                         break;
                     // Canonical name records, or CNAME records, are often called alias records because they map an alias to the canonical name. When a name server finds a CNAME record, it replaces the name with the canonical name and looks up the new name.
                     case RecordType.CName:
-                        record = new ARSoft.Tools.Net.Dns.CNameRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, DomainName.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.CNameRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, ARSoft.Tools.Net.DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.Ptr:
-                        record = new ARSoft.Tools.Net.Dns.PtrRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, DomainName.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.PtrRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, ARSoft.Tools.Net.DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.A:
-                        record = new ARSoft.Tools.Net.Dns.ARecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, System.Net.IPAddress.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.ARecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, System.Net.IPAddress.Parse(rec.REC_Content));
                         break;
                     case RecordType.Aaaa:
-                        record = new ARSoft.Tools.Net.Dns.AaaaRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, System.Net.IPAddress.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.AaaaRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, System.Net.IPAddress.Parse(rec.REC_Content));
                         break;
                     case RecordType.Mx:
-                        record = new ARSoft.Tools.Net.Dns.MxRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, 0, DomainName.Parse(rec.REC_Content));
+                        record = new ARSoft.Tools.Net.Dns.MxRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, 0, ARSoft.Tools.Net.DomainName.Parse(rec.REC_Content));
                         break;
                     case RecordType.Txt:
-                        record = new ARSoft.Tools.Net.Dns.TxtRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, rec.REC_Content);
+                        record = new ARSoft.Tools.Net.Dns.TxtRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, rec.REC_Content);
                         break;
                     case RecordType.SshFp:
                         // https://unix.stackexchange.com/questions/121880/how-do-i-generate-sshfp-records
@@ -289,7 +285,7 @@ AND T_Records.REC_Name = @in_recordName
                         
                         byte[] fp = null;
                         
-                        record = new ARSoft.Tools.Net.Dns.SshFpRecord(DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, sfa,sfp, fp);
+                        record = new ARSoft.Tools.Net.Dns.SshFpRecord(ARSoft.Tools.Net.DomainName.Parse(rec.REC_Name), rec.REC_TTL.Value, sfa,sfp, fp);
                         break;
                     default:
                         break;
@@ -300,14 +296,14 @@ AND T_Records.REC_Name = @in_recordName
 
                 response.ReturnCode = ReturnCode.NoError;
                 e.Response = response;
-                return await Task<bool>.FromResult(true);
+                return await System.Threading.Tasks.Task<bool>.FromResult(true);
             } // End if (rec != null) 
 
-            return await Task<bool>.FromResult(false);
+            return await System.Threading.Tasks.Task<bool>.FromResult(false);
         } // End Function ResolveMessage
 
 
-        static async Task ForwardMessage(DnsMessage query, QueryReceivedEventArgs e, DnsMessage response)
+        static async System.Threading.Tasks.Task ForwardMessage(DnsMessage query, QueryReceivedEventArgs e, DnsMessage response)
         {
             if ((query.Questions.Count == 1))
             {

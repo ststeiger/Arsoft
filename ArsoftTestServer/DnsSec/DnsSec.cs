@@ -1,10 +1,5 @@
 ﻿
-using System;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-
 using ARSoft.Tools.Net.Dns;
-using ARSoft.Tools.Net.Net;
 
 
 namespace ArsoftTestServer
@@ -21,12 +16,12 @@ namespace ArsoftTestServer
             DnsSecResult<SshFpRecord> result = resolver.ResolveSecure<SshFpRecord>("example.com", RecordType.SshFp);
             if (result.ValidationResult == DnsSecValidationResult.Signed)
             {
-                Console.WriteLine("example.com has following signed SSH fingerprint records:");
-                result.Records.ForEach(x => Console.WriteLine(x.ToString()));
+                System.Console.WriteLine("example.com has following signed SSH fingerprint records:");
+                result.Records.ForEach(x => System.Console.WriteLine(x.ToString()));
             }
             else
             {
-                Console.WriteLine("example.com has no signed SSH fingerprint records");
+                System.Console.WriteLine("example.com has no signed SSH fingerprint records");
             }
         } // End Sub Test1 
 
@@ -35,19 +30,19 @@ namespace ArsoftTestServer
         public static void Test2()
         {
             IDnsSecResolver resolver = new DnsSecRecursiveDnsResolver();
-            //using (TcpClient client = new TcpClient("example.com", 443))
-            using (TcpClient client = new TcpClient())
+            //using (System.Net.Sockets.TcpClient client = new System.Net.Sockets.TcpClient("example.com", 443))
+
+            using (System.Net.Sockets.TcpClient client = new System.Net.Sockets.TcpClient())
             {
-                Task t = client.ConnectAsync("example.com", 443);
+                System.Threading.Tasks.Task t = client.ConnectAsync("example.com", 443);
                 t.Wait();
-
-
-                using (DaneStream stream = new DaneStream(client.GetStream(), resolver))
+                
+                using (ARSoft.Tools.Net.Net.DaneStream stream = new ARSoft.Tools.Net.Net.DaneStream(client.GetStream(), resolver))
                 {
                     stream.AuthenticateAsClient("example.com", 443);
 
                     if (stream.IsAuthenticatedByDane)
-                        Console.WriteLine("Stream is authenticated by DANE/TLSA");
+                        System.Console.WriteLine("Stream is authenticated by DANE/TLSA");
 
                     // work with the stream
                 } // End Using stream 

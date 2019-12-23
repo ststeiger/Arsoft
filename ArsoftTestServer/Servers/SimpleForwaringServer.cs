@@ -1,11 +1,6 @@
 ﻿
-using System;
-using System.Net;
-using System.Threading.Tasks;
-
-
-using ARSoft.Tools.Net;
 using ARSoft.Tools.Net.Dns;
+
 
 namespace ArsoftTestServer
 {
@@ -16,20 +11,20 @@ namespace ArsoftTestServer
     {
         public static void Test()
         {
-            using (DnsServer server = new DnsServer(IPAddress.Any, 10, 10))
+            using (DnsServer server = new DnsServer(System.Net.IPAddress.Any, 10, 10))
             {
                 server.QueryReceived += OnQueryReceived;
 
                 server.Start();
 
-                Console.WriteLine("Press any key to stop server");
-                Console.ReadLine();
+                System.Console.WriteLine("Press any key to stop server");
+                System.Console.ReadLine();
             } // End Using server 
 
         } // End Sub Test 
 
 
-        static async Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
+        static async System.Threading.Tasks.Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
         {
             DnsMessage message = e.Query as DnsMessage;
 
