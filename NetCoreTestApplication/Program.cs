@@ -241,6 +241,43 @@ namespace NetCoreTestApplication
 
             public DnsSecAlgorithm Algorithm;
             public DnsKeyFlags Flags;
+            
+            public DnsSecDigestType Digest
+            {
+                get
+                {
+                    
+                    switch (this.Algorithm)
+                    {
+                        case DnsSecAlgorithm.Dsa:
+                        case DnsSecAlgorithm.DsaNsec3Sha1:
+                        case DnsSecAlgorithm.RsaSha1:
+                        case DnsSecAlgorithm.RsaSha1Nsec3Sha1:
+                            return DnsSecDigestType.Sha1;
+                        
+                        case DnsSecAlgorithm.EcDsaP256Sha256:
+                        case DnsSecAlgorithm.RsaSha256:
+                            return DnsSecDigestType.Sha256;
+                        
+                        case DnsSecAlgorithm.EcDsaP384Sha384:
+                            return DnsSecDigestType.Sha384;
+                        
+                        case DnsSecAlgorithm.EccGost:
+                            return DnsSecDigestType.EccGost;
+                        
+                        case DnsSecAlgorithm.Indirect:
+                        case DnsSecAlgorithm.PrivateDns:
+                        case DnsSecAlgorithm.PrivateOid:
+                        case DnsSecAlgorithm.DiffieHellman:
+                        case DnsSecAlgorithm.RsaMd5:
+                        case DnsSecAlgorithm.RsaSha512:
+                            return DnsSecDigestType.EccGost;
+                    }
+                    
+                    return DnsSecDigestType.Sha1;
+                }
+            }
+            
         }
 
 
@@ -432,6 +469,35 @@ namespace NetCoreTestApplication
 
 
 
+        public static void PrintAlgorithms()
+        {
+            
+            
+            DnsSecAlgorithm[] a = (DnsSecAlgorithm[]) System.Enum.GetValues(typeof(DnsSecAlgorithm));
+
+            for (int i = 0; i < a.Length; ++i)
+            {
+                string name = a[i].ToString();
+                byte value = (byte) a[i];
+                
+                System.Console.WriteLine(name+": " + value.ToString());
+            }
+
+            // foreach (DnsSecAlgorithm[] suit in (DnsSecAlgorithm[]) System.Enum.GetValues(typeof(DnsSecAlgorithm))) { }
+            
+            
+            foreach (string name in System.Enum.GetNames(typeof(DnsSecAlgorithm)))
+            {
+                System.Console.WriteLine(name);
+            }
+            
+            foreach (string name in System.Enum.GetValues(typeof(DnsSecAlgorithm)))
+            {
+                System.Console.WriteLine(name);
+            }
+        }
+        
+        
         static void Main(string[] args)
         {
             TestKeyPair();
@@ -520,6 +586,7 @@ namespace NetCoreTestApplication
             
             
             string strDNSKey = dnsKey.ToString();
+            // dnsKey.CalculateKeyTag()
             System.Console.WriteLine(strDNSKey);
             // example.com. 60 * DNSKEY 256 3 8 AQIDBAUGBwgJ
 
@@ -532,6 +599,7 @@ namespace NetCoreTestApplication
             
             RrSigRecord rrsig1 = RrSigRecord.SignRecord(records, dnsKey, System.DateTime.UtcNow, System.DateTime.UtcNow.AddDays(30));
             string strRRsig = rrsig1.ToString();
+            // rrsig1.Signature
             System.Console.WriteLine(strRRsig);
             
             // example.com. 0 IN RRSIG AAAA 12 2 0 20200122193048 20191223193048 46296 example.com. 9aCosjMmgc1iL4jNavgPAA5NXRp5jukyKxb9vCA8PNoz1d4LjaTjfURxnKhX97KkkTdSW0tUoeYgBK7t/qjOFg==
@@ -552,14 +620,21 @@ namespace NetCoreTestApplication
                     , DomainName.Parse("example.com") // Signer's Name: Name of the DNSKEY-record which can be used to validate this signature.
                     , new byte[] { 1, 2, 3 } // Signature: Cryptographic signature.  (Base64)
                 );
-            
 
 
             
-
+            
+            
+            DsRecord signedDsRec = new DsRecord(dnsKey, 0, keyPair.Digest);
+            string strSignedDsRec = signedDsRec.ToString();
+            System.Console.WriteLine(strSignedDsRec);
+            // signedDsRec.Digest
+            // example.com. 0 * DS 24280 12 3 C453FBE75917C8A07BB767230463FA6C271E21D3D92F1ACCC538A194A7C41CC8
+            
+            
             DsRecord dsRec = new DsRecord(
-                DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
-                                   // Fully qualified hostnames terminated by a period will not append the origin.
+                  DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
+                                                 // Fully qualified hostnames terminated by a period will not append the origin.
                 , RecordClass.Any
                 , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
                      // before the query expires and a new one needs to be done.
@@ -568,6 +643,12 @@ namespace NetCoreTestApplication
                 , DnsSecDigestType.Sha256 // Digest Type: Cryptographic hash algorithm used to create the Digest value.
                 , new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0xFF } // A cryptographic hash value of the referenced DNSKEY-record.
             );
+            
+            // dsRec.Digest
+            string strDsRec = dsRec.ToString();
+            System.Console.WriteLine(strDsRec);
+            // example.com. 60 * DS 0 8 2 0102030405060708090AFF
+            
             
             string strDS = dsRec.ToString();
             System.Console.WriteLine(strDS);
