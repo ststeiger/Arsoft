@@ -8,6 +8,42 @@ namespace NetCoreTestApplication
     using ARSoft.Tools.Net;
     using ARSoft.Tools.Net.Dns;
 
+    public static class EnumExtensions
+    {
+
+        public static T[] GetValues<T>()
+        {
+            T[] a = (T[])System.Enum.GetValues(typeof(T));
+            return a;
+        }
+
+
+        public static string GetEnumInsert<T>()
+        {
+            System.Type t = typeof(T).GetEnumUnderlyingType();
+            T[] a = GetValues<T>();
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+            for (int i = 0; i < a.Length; ++i)
+            {
+                string name = a[i].ToString();
+                object value = System.Convert.ChangeType(a[i], t);
+
+                sb.AppendLine(value.ToString() + "\t" + name);
+            } // Next i 
+
+            string retValue = sb.ToString();
+            sb.Clear();
+            sb = null;
+            return retValue;
+        }
+
+
+    }
+
+
+
     class Program
     {
 
@@ -234,19 +270,19 @@ namespace NetCoreTestApplication
         public class KeyPairRecord
         {
             public Org.BouncyCastle.Crypto.AsymmetricCipherKeyPair KeyPair;
-            
+
             public byte[] PublicKey;
             public byte[] PrivateKey;
 
 
             public DnsSecAlgorithm Algorithm;
             public DnsKeyFlags Flags;
-            
+
             public DnsSecDigestType Digest
             {
                 get
                 {
-                    
+
                     switch (this.Algorithm)
                     {
                         case DnsSecAlgorithm.Dsa:
@@ -254,17 +290,17 @@ namespace NetCoreTestApplication
                         case DnsSecAlgorithm.RsaSha1:
                         case DnsSecAlgorithm.RsaSha1Nsec3Sha1:
                             return DnsSecDigestType.Sha1;
-                        
+
                         case DnsSecAlgorithm.EcDsaP256Sha256:
                         case DnsSecAlgorithm.RsaSha256:
                             return DnsSecDigestType.Sha256;
-                        
+
                         case DnsSecAlgorithm.EcDsaP384Sha384:
                             return DnsSecDigestType.Sha384;
-                        
+
                         case DnsSecAlgorithm.EccGost:
                             return DnsSecDigestType.EccGost;
-                        
+
                         case DnsSecAlgorithm.Indirect:
                         case DnsSecAlgorithm.PrivateDns:
                         case DnsSecAlgorithm.PrivateOid:
@@ -273,11 +309,11 @@ namespace NetCoreTestApplication
                         case DnsSecAlgorithm.RsaSha512:
                             return DnsSecDigestType.EccGost;
                     }
-                    
+
                     return DnsSecDigestType.Sha1;
                 }
             }
-            
+
         }
 
 
@@ -296,11 +332,11 @@ namespace NetCoreTestApplication
 		public static KeyPairRecord CreateSigningKey(DnsSecAlgorithm algorithm, DnsKeyFlags flags, int keyStrength = 0)
         {
             // Found in DnsKeyRecord.CreateSigningKey
-            
+
             KeyPairRecord rec = new KeyPairRecord();
             rec.Flags = flags;
             rec.Algorithm = algorithm;
-            
+
             /*
 	        internal override string RecordDataToString()
             {
@@ -337,7 +373,7 @@ namespace NetCoreTestApplication
 
             // https://csharp.hotexamples.com/examples/Org.BouncyCastle.Crypto.Generators/DsaKeyPairGenerator/GenerateKeyPair/php-dsakeypairgenerator-generatekeypair-method-examples.html
 
-            
+
             switch (algorithm)
             {
                 case DnsSecAlgorithm.RsaSha1:
@@ -382,7 +418,7 @@ namespace NetCoreTestApplication
                     dsaKeyGen.Init(new Org.BouncyCastle.Crypto.Parameters.DsaKeyGenerationParameters(_secureRandom, dsaParamsGen.GenerateParameters()));
                     Org.BouncyCastle.Crypto.AsymmetricCipherKeyPair dsaKey = dsaKeyGen.GenerateKeyPair();
                     rec.KeyPair = dsaKey;
-                    
+
                     rec.PrivateKey = Org.BouncyCastle.Pkcs.PrivateKeyInfoFactory.CreatePrivateKeyInfo(dsaKey.Private).GetDerEncoded();
                     var dsaPublicKey = (Org.BouncyCastle.Crypto.Parameters.DsaPublicKeyParameters)dsaKey.Public;
 
@@ -448,7 +484,7 @@ namespace NetCoreTestApplication
 
                     var ecDsaKey = ecDsaKeyGen.GenerateKeyPair();
                     rec.KeyPair = ecDsaKey;
-                    
+
                     rec.PrivateKey = Org.BouncyCastle.Pkcs.PrivateKeyInfoFactory.CreatePrivateKeyInfo(ecDsaKey.Private).GetDerEncoded();
                     var ecDsaPublicKey = (Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters)ecDsaKey.Public;
 
@@ -462,7 +498,7 @@ namespace NetCoreTestApplication
                 default:
                     throw new System.NotSupportedException();
             }
-            
+
             // return new DnsKeyRecord(name, recordClass, timeToLive, flags, protocol, algorithm, rec.PublicKey, rec.PrivateKey);
             return rec;
         }
@@ -471,35 +507,21 @@ namespace NetCoreTestApplication
 
         public static void PrintAlgorithms()
         {
-            
-            
-            DnsSecAlgorithm[] a = (DnsSecAlgorithm[]) System.Enum.GetValues(typeof(DnsSecAlgorithm));
+            System.Console.WriteLine(byte.MinValue); // 0
+            System.Console.WriteLine(byte.MaxValue); // 255
 
-            for (int i = 0; i < a.Length; ++i)
-            {
-                string name = a[i].ToString();
-                byte value = (byte) a[i];
-                
-                System.Console.WriteLine(name+": " + value.ToString());
-            }
+            string sqlDigest = EnumExtensions.GetEnumInsert<DnsSecDigestType>();
+            System.Console.WriteLine(sqlDigest);
 
-            // foreach (DnsSecAlgorithm[] suit in (DnsSecAlgorithm[]) System.Enum.GetValues(typeof(DnsSecAlgorithm))) { }
-            
-            
-            foreach (string name in System.Enum.GetNames(typeof(DnsSecAlgorithm)))
-            {
-                System.Console.WriteLine(name);
-            }
-            
-            foreach (string name in System.Enum.GetValues(typeof(DnsSecAlgorithm)))
-            {
-                System.Console.WriteLine(name);
-            }
+            string sqlAlgo = EnumExtensions.GetEnumInsert<DnsSecAlgorithm>();
+            System.Console.WriteLine(sqlAlgo);
         }
-        
-        
+
+
         static void Main(string[] args)
         {
+            PrintAlgorithms();
+
             TestKeyPair();
 
             // https://www.cloudflare.com/dns/dnssec/how-dnssec-works/
@@ -545,6 +567,19 @@ namespace NetCoreTestApplication
             // We need a way to connect the trust in our zone with its parent zone.
 
 
+            // Delegation Signer Records
+            // DNSSEC introduces a delegation signer(DS) record to allow the transfer of trust 
+            // from a parent zone to a child zone. A zone operator hashes the DNSKEY record 
+            // containing the public KSK and gives it to the parent zone to publish as a DS record.
+
+            // This DS record is how resolvers know that the child zone is DNSSEC - enabled. 
+            // To check the validity of the child zone’s public KSK, 
+            // the resolver hashes it and compares it to the DS record from the parent. 
+            // If they match, the resolver can assume that the public KSK hasn’t been tampered with, 
+            // which means it can trust all of the records in the child zone.
+            // This is how a chain of trust is established in DNSSEC.
+
+
             // System.Security.Cryptography.X509Certificates.X509Certificate2 cert2 = new System.Security.Cryptography.X509Certificates.X509Certificate2(byte[] rawData);
             // System.Security.Cryptography.X509Certificates.X509Certificate2 cert2 = DotNetUtilities.CreateX509Cert2("mycert");
             // SecurityKey secKey = new X509SecurityKey(cert2);
@@ -557,58 +592,65 @@ namespace NetCoreTestApplication
             string straaa = aaa.ToString();
             System.Console.WriteLine(straaa);
 
-            
-            
+
+
             // DnsRecordBase drb = null;
 
             // DnsMessage msg = DnsMessage.Parse(new byte[] { });
-            
+
             // DnsKeyFlags flags = DnsKeyFlags.SecureEntryPoint;
-            KeyPairRecord keyPair = CreateSigningKey( DnsSecAlgorithm.EccGost, DnsKeyFlags.SecureEntryPoint, 512);
+            KeyPairRecord ZSK_key = CreateSigningKey(DnsSecAlgorithm.EccGost, DnsKeyFlags.Zone, 512);
+            KeyPairRecord keyPair = CreateSigningKey(DnsSecAlgorithm.EccGost, DnsKeyFlags.SecureEntryPoint, 512);
+
             
-            
-            
+
+
+            publicKey = Org.BouncyCastle.X509.SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(ZSK_key.KeyPair.Public).GetEncoded();
+            privateKey = Org.BouncyCastle.Pkcs.PrivateKeyInfoFactory.CreatePrivateKeyInfo(keyPair.Private).GetEncoded();
+
+
+
             // Private key only necessary when signing, now when publishing... 
             DnsKeyRecord dnsKey = new DnsKeyRecord(
                 DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
-                // Fully qualified hostnames terminated by a period will not append the origin.
-                ,RecordClass.Any
-                ,60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
-                // before the query expires and a new one needs to be done.
-                ,keyPair.Flags
-                ,3 // Fixed value of 3 (for backwards compatibility)
+                                                // Fully qualified hostnames terminated by a period will not append the origin.
+                , RecordClass.Any
+                , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
+                     // before the query expires and a new one needs to be done.
+                , keyPair.Flags
+                , 3 // Fixed value of 3 (for backwards compatibility)
                 , keyPair.Algorithm // The public key's cryptographic algorithm.
                 , keyPair.PublicKey //  new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 } // Public key data.
                 , keyPair.PrivateKey
             );
 
-            
-            
-            
+
+
+
             string strDNSKey = dnsKey.ToString();
             // dnsKey.CalculateKeyTag()
             System.Console.WriteLine(strDNSKey);
             // example.com. 60 * DNSKEY 256 3 8 AQIDBAUGBwgJ
 
-            
-            
+
+
             List<DnsRecordBase> records = new List<DnsRecordBase>();
             records.Add(aaa);
-            
-            
-            
+
+
+
             RrSigRecord rrsig1 = RrSigRecord.SignRecord(records, dnsKey, System.DateTime.UtcNow, System.DateTime.UtcNow.AddDays(30));
             string strRRsig = rrsig1.ToString();
             // rrsig1.Signature
             System.Console.WriteLine(strRRsig);
-            
+
             // example.com. 0 IN RRSIG AAAA 12 2 0 20200122193048 20191223193048 46296 example.com. 9aCosjMmgc1iL4jNavgPAA5NXRp5jukyKxb9vCA8PNoz1d4LjaTjfURxnKhX97KkkTdSW0tUoeYgBK7t/qjOFg==
-            
+
             RrSigRecord rrsig = new RrSigRecord(
                     DomainName.Parse("example.com") // Name of the digitally signed RRs
                     , RecordClass.Any
                     , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
-                    // before the query expires and a new one needs to be done.
+                         // before the query expires and a new one needs to be done.
                     , RecordType.A   // Type Covered: DNS record type that this signature covers.
                     , DnsSecAlgorithm.EccGost // Cryptographic algorithm used to create the signature.
                     , 4 // Labels: Number of labels in the original RRSIG-record name (used to validate wildcards).
@@ -616,25 +658,25 @@ namespace NetCoreTestApplication
                     , System.DateTime.Now.AddMinutes(1) // Signature Expiration: When the signature expires.
                     , System.DateTime.Now // Signature Inception: When the signature was created.
                     , 0 // Key Tag: A short numeric value which can help quickly identify the DNSKEY-record which can be used to validate this signature.
-                    // identifiziert den unterzeichnenden DNSKEY, um zwischen mehreren Signaturen zu unterscheiden (engl. key tag)
+                        // identifiziert den unterzeichnenden DNSKEY, um zwischen mehreren Signaturen zu unterscheiden (engl. key tag)
                     , DomainName.Parse("example.com") // Signer's Name: Name of the DNSKEY-record which can be used to validate this signature.
                     , new byte[] { 1, 2, 3 } // Signature: Cryptographic signature.  (Base64)
                 );
 
 
-            
-            
-            
+
+
+
             DsRecord signedDsRec = new DsRecord(dnsKey, 0, keyPair.Digest);
             string strSignedDsRec = signedDsRec.ToString();
             System.Console.WriteLine(strSignedDsRec);
             // signedDsRec.Digest
             // example.com. 0 * DS 24280 12 3 C453FBE75917C8A07BB767230463FA6C271E21D3D92F1ACCC538A194A7C41CC8
-            
-            
+
+
             DsRecord dsRec = new DsRecord(
                   DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
-                                                 // Fully qualified hostnames terminated by a period will not append the origin.
+                                                  // Fully qualified hostnames terminated by a period will not append the origin.
                 , RecordClass.Any
                 , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
                      // before the query expires and a new one needs to be done.
@@ -643,13 +685,13 @@ namespace NetCoreTestApplication
                 , DnsSecDigestType.Sha256 // Digest Type: Cryptographic hash algorithm used to create the Digest value.
                 , new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0xFF } // A cryptographic hash value of the referenced DNSKEY-record.
             );
-            
+
             // dsRec.Digest
             string strDsRec = dsRec.ToString();
             System.Console.WriteLine(strDsRec);
             // example.com. 60 * DS 0 8 2 0102030405060708090AFF
-            
-            
+
+
             string strDS = dsRec.ToString();
             System.Console.WriteLine(strDS);
             // . 0 IN AAAA 127.0.0.1 // aaa
@@ -658,12 +700,12 @@ namespace NetCoreTestApplication
             // example.com. 60 * DS 0 8 2 010203
             // example.com. 60 * DS 0 8 2 010203040506070809
             // example.com. 60 * DS 0 8 2 0102030405060708090AFF
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             // rec.Algorithm
 
             string key = @"AQPSKmynfzW4kyBv015MUG2DeIQ3
