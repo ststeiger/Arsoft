@@ -135,6 +135,33 @@ namespace ARSoft.Tools.Net.Dns
 
 			Signature = key.Sign(signBuffer, signBufferLength);
 		}
+		
+		
+		public static RrSigRecord SignRecord(List<DnsRecordBase> records, DnsKeyRecord key, DateTime inception, DateTime expiration)
+		{
+			RrSigRecord record = new RrSigRecord(records, key, inception, expiration);
+			
+			record.TypeCovered = records[0].RecordType;
+			record.Algorithm = key.Algorithm;
+			record.Labels = (byte) (records[0].Name.Labels[0] == DomainName.Asterisk.Labels[0] ? records[0].Name.LabelCount - 1 : records[0].Name.LabelCount);
+			record.OriginalTimeToLive = records[0].TimeToLive;
+			record.SignatureExpiration = expiration;
+			record.SignatureInception = inception;
+			record.KeyTag = key.CalculateKeyTag();
+			record.SignersName = key.Name;
+			record.Signature = new byte[] { };
+			
+			// byte[] signBuffer;
+			// int signBufferLength;
+			record.EncodeSigningBuffer(records, out byte[] signBuffer, out int signBufferLength);
+			record.Signature = key.Sign(signBuffer, signBufferLength);
+			
+			return record;
+		}
+
+
+
+
 
 		internal override void ParseRecordData(byte[] resultData, int startPosition, int length)
 		{
