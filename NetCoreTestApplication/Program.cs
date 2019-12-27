@@ -315,9 +315,8 @@ namespace NetCoreTestApplication
             }
 
         }
-
-
-
+        
+        
         /// <summary>
 		///   Creates a new signing key pair
 		/// </summary>
@@ -332,48 +331,15 @@ namespace NetCoreTestApplication
 		public static KeyPairRecord CreateSigningKey(DnsSecAlgorithm algorithm, DnsKeyFlags flags, int keyStrength = 0)
         {
             // Found in DnsKeyRecord.CreateSigningKey
-
             KeyPairRecord rec = new KeyPairRecord();
             rec.Flags = flags;
             rec.Algorithm = algorithm;
-
-            /*
-	        internal override string RecordDataToString()
-            {
-	            return (ushort) Flags
-			            + " " + Protocol
-			            + " " + (byte) Algorithm
-			            + " " + PublicKey.ToBase64String();
-            }
-
-
-    DnsRecordBase
-		    internal abstract string RecordDataToString();
-
-            public override string ToString()
-            {
-	            string recordData = RecordDataToString();
-	            return Name + " " + TimeToLive + " " + RecordClass.ToShortString() + " " + RecordType.ToShortString() + (String.IsNullOrEmpty(recordData) ? "" : " " + recordData);
-            }
-
-
-    RrSigRecord.cs
-            byte[] signBuffer;
-            int signBufferLength;
-            EncodeSigningBuffer(records, out signBuffer, out signBufferLength);
-
-            Signature = key.Sign(signBuffer, signBufferLength);
-
-             */
-
-
+            
             Org.BouncyCastle.Security.SecureRandom _secureRandom =
                 new Org.BouncyCastle.Security.SecureRandom(new Org.BouncyCastle.Crypto.Prng.CryptoApiRandomGenerator());
-
-
+            
             // https://csharp.hotexamples.com/examples/Org.BouncyCastle.Crypto.Generators/DsaKeyPairGenerator/GenerateKeyPair/php-dsakeypairgenerator-generatekeypair-method-examples.html
-
-
+            
             switch (algorithm)
             {
                 case DnsSecAlgorithm.RsaSha1:
@@ -471,40 +437,39 @@ namespace NetCoreTestApplication
                         ecDsaDigestSize = new Org.BouncyCastle.Crypto.Digests.Sha384Digest().GetDigestSize();
                         ecDsaCurveParameter = Org.BouncyCastle.Asn1.Nist.NistNamedCurves.GetByOid(Org.BouncyCastle.Asn1.Sec.SecObjectIdentifiers.SecP384r1);
                     }
-
+                    
                     Org.BouncyCastle.Crypto.Parameters.ECDomainParameters ecDsaP384EcDomainParameters = new Org.BouncyCastle.Crypto.Parameters.ECDomainParameters(
                         ecDsaCurveParameter.Curve,
                         ecDsaCurveParameter.G,
                         ecDsaCurveParameter.N,
                         ecDsaCurveParameter.H,
                         ecDsaCurveParameter.GetSeed());
-
+                    
                     var ecDsaKeyGen = new Org.BouncyCastle.Crypto.Generators.ECKeyPairGenerator();
                     ecDsaKeyGen.Init(new Org.BouncyCastle.Crypto.Parameters.ECKeyGenerationParameters(ecDsaP384EcDomainParameters, _secureRandom));
-
-                    var ecDsaKey = ecDsaKeyGen.GenerateKeyPair();
+                    
+                    Org.BouncyCastle.Crypto.AsymmetricCipherKeyPair ecDsaKey = ecDsaKeyGen.GenerateKeyPair();
                     rec.KeyPair = ecDsaKey;
-
+                    
                     rec.PrivateKey = Org.BouncyCastle.Pkcs.PrivateKeyInfoFactory.CreatePrivateKeyInfo(ecDsaKey.Private).GetDerEncoded();
                     var ecDsaPublicKey = (Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters)ecDsaKey.Public;
-
+                    
                     rec.PublicKey = new byte[ecDsaDigestSize * 2];
                     // ecDsaPublicKey.Q.X.ToBigInteger().ToByteArrayUnsigned().CopyTo(publicKey, 0);
                     ecDsaPublicKey.Q.AffineXCoord.ToBigInteger().ToByteArrayUnsigned().CopyTo(rec.PublicKey, 0);
                     // ecDsaPublicKey.Q.Y.ToBigInteger().ToByteArrayUnsigned().CopyTo(publicKey, ecDsaDigestSize);
                     ecDsaPublicKey.Q.AffineYCoord.ToBigInteger().ToByteArrayUnsigned().CopyTo(rec.PublicKey, ecDsaDigestSize);
                     break;
-
+                
                 default:
                     throw new System.NotSupportedException();
             }
-
+            
             // return new DnsKeyRecord(name, recordClass, timeToLive, flags, protocol, algorithm, rec.PublicKey, rec.PrivateKey);
             return rec;
         }
-
-
-
+        
+        
         public static void PrintAlgorithms()
         {
             System.Console.WriteLine(byte.MinValue); // 0
@@ -516,14 +481,40 @@ namespace NetCoreTestApplication
             string sqlAlgo = EnumExtensions.GetEnumInsert<DnsSecAlgorithm>();
             System.Console.WriteLine(sqlAlgo);
         }
+        
+        
+        public static void EqualityCheck()
+        {
+            KeyPairRecord ZSK_keyPair = CreateSigningKey(DnsSecAlgorithm.EccGost, DnsKeyFlags.Zone, 512);
+            KeyPairRecord KSK_keyPair = CreateSigningKey(DnsSecAlgorithm.EccGost, DnsKeyFlags.SecureEntryPoint, 512);
+            
+            KeyPairRecord keyPair = KSK_keyPair;
+            // KeyPairRecord keyPair = ZSK_keyPair;
+            
+            byte[] zsPub = Org.BouncyCastle.X509.SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(keyPair.KeyPair.Public).GetDerEncoded();
+            byte[] zsPriv = Org.BouncyCastle.Pkcs.PrivateKeyInfoFactory.CreatePrivateKeyInfo(keyPair.KeyPair.Private).GetDerEncoded();
+            
+            bool bPub = System.Linq.Enumerable.SequenceEqual(keyPair.PublicKey, zsPub);
+            bool bPriv = System.Linq.Enumerable.SequenceEqual(keyPair.PrivateKey, zsPriv);
+            System.Console.WriteLine("Pub; {0}\t Priv: {1}", bPub, bPriv);
+            // always true on private key
+            // always wrong on public key
+        }
 
 
+        public static void foo(byte[] ba)
+        {
+            
+        }
+        
+        
         static void Main(string[] args)
         {
-            PrintAlgorithms();
-
-            TestKeyPair();
-
+            // EqualityCheck();
+            
+            // PrintAlgorithms();
+            // TestKeyPair();
+            
             // https://www.cloudflare.com/dns/dnssec/how-dnssec-works/
             // RRSIG - Contains a cryptographic signature
             // DNSKEY - Contains a public signing key
@@ -588,27 +579,26 @@ namespace NetCoreTestApplication
             // https://www.dynu.com/Resources/DNS-Records/DNSKEY-Record
 
 
-            var aaa = new AaaaRecord(DomainName.Parse("example.com"), 0, System.Net.IPAddress.Parse("127.0.0.1"));
+            AaaaRecord aaa = new AaaaRecord(DomainName.Parse("example.com"), 0, System.Net.IPAddress.Parse("127.0.0.1"));
             string straaa = aaa.ToString();
             System.Console.WriteLine(straaa);
-
-
-
+            
+            
             // DnsRecordBase drb = null;
-
             // DnsMessage msg = DnsMessage.Parse(new byte[] { });
-
             // DnsKeyFlags flags = DnsKeyFlags.SecureEntryPoint;
+            
             KeyPairRecord ZSK_key = CreateSigningKey(DnsSecAlgorithm.EccGost, DnsKeyFlags.Zone, 512);
             KeyPairRecord keyPair = CreateSigningKey(DnsSecAlgorithm.EccGost, DnsKeyFlags.SecureEntryPoint, 512);
-
             
+            
+            byte[] zsPub = Org.BouncyCastle.X509.SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(ZSK_key.KeyPair.Public).GetDerEncoded();
+            byte[] zsPriv = Org.BouncyCastle.Pkcs.PrivateKeyInfoFactory.CreatePrivateKeyInfo(keyPair.KeyPair.Private).GetDerEncoded();
 
-
-            publicKey = Org.BouncyCastle.X509.SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(ZSK_key.KeyPair.Public).GetEncoded();
-            privateKey = Org.BouncyCastle.Pkcs.PrivateKeyInfoFactory.CreatePrivateKeyInfo(keyPair.Private).GetEncoded();
-
-
+            bool bPub = System.Linq.Enumerable.SequenceEqual(ZSK_key.PublicKey, zsPub);
+            bool bPriv = System.Linq.Enumerable.SequenceEqual(ZSK_key.PrivateKey, zsPriv);
+            System.Console.WriteLine("Pub; {0}\t Priv: {1}", bPub, bPriv);
+            
 
             // Private key only necessary when signing, now when publishing... 
             DnsKeyRecord dnsKey = new DnsKeyRecord(
@@ -727,21 +717,19 @@ namespace NetCoreTestApplication
             // ArsoftTestServer.KeyConversion.fromPublicKey()
             PublicKey pk = ArsoftTestServer.KeyConversionTo.toPublicKey(keyBytes, DnsSecAlgorithm.RsaSha1);
             System.Console.WriteLine(pk);
-
-
+            
             byte[] generatedKeyBytes = ArsoftTestServer.KeyConversion.fromPublicKey(pk, DnsSecAlgorithm.RsaSha1);
-
-
+            
             // ArsoftTestServer.Resolvers.Test4();
             // ArsoftTestServer.SimpleServer.Test();
-
+            
             System.Console.WriteLine(System.Environment.NewLine);
             System.Console.WriteLine(" --- Press any key to continue --- ");
             System.Console.ReadKey();
         }
-
-
+        
+        
     }
-
-
+    
+    
 }
