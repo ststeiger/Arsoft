@@ -1,47 +1,11 @@
 ﻿
-using System.Collections.Generic;
-using ARSoft.Tools.Net.Dns;
 using ArsoftTestServer;
+
 
 namespace NetCoreTestApplication
 {
-    using ARSoft.Tools.Net;
+
     using ARSoft.Tools.Net.Dns;
-
-    public static class EnumExtensions
-    {
-
-        public static T[] GetValues<T>()
-        {
-            T[] a = (T[])System.Enum.GetValues(typeof(T));
-            return a;
-        }
-
-
-        public static string GetEnumInsert<T>()
-        {
-            System.Type t = typeof(T).GetEnumUnderlyingType();
-            T[] a = GetValues<T>();
-
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-
-            for (int i = 0; i < a.Length; ++i)
-            {
-                string name = a[i].ToString();
-                object value = System.Convert.ChangeType(a[i], t);
-
-                sb.AppendLine(value.ToString() + "\t" + name);
-            } // Next i 
-
-            string retValue = sb.ToString();
-            sb.Clear();
-            sb = null;
-            return retValue;
-        }
-
-
-    }
-
 
 
     class Program
@@ -579,7 +543,7 @@ namespace NetCoreTestApplication
             // https://www.dynu.com/Resources/DNS-Records/DNSKEY-Record
 
 
-            AaaaRecord aaa = new AaaaRecord(DomainName.Parse("example.com"), 0, System.Net.IPAddress.Parse("127.0.0.1"));
+            AaaaRecord aaa = new AaaaRecord(ARSoft.Tools.Net.DomainName.Parse("example.com"), 0, System.Net.IPAddress.Parse("127.0.0.1"));
             string straaa = aaa.ToString();
             System.Console.WriteLine(straaa);
             
@@ -602,7 +566,7 @@ namespace NetCoreTestApplication
 
             // Private key only necessary when signing, now when publishing... 
             DnsKeyRecord dnsKey = new DnsKeyRecord(
-                DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
+                ARSoft.Tools.Net.DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
                                                 // Fully qualified hostnames terminated by a period will not append the origin.
                 , RecordClass.Any
                 , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
@@ -624,7 +588,7 @@ namespace NetCoreTestApplication
 
 
 
-            List<DnsRecordBase> records = new List<DnsRecordBase>();
+            System.Collections.Generic.List<DnsRecordBase> records = new System.Collections.Generic.List<DnsRecordBase>();
             records.Add(aaa);
 
 
@@ -637,7 +601,7 @@ namespace NetCoreTestApplication
             // example.com. 0 IN RRSIG AAAA 12 2 0 20200122193048 20191223193048 46296 example.com. 9aCosjMmgc1iL4jNavgPAA5NXRp5jukyKxb9vCA8PNoz1d4LjaTjfURxnKhX97KkkTdSW0tUoeYgBK7t/qjOFg==
 
             RrSigRecord rrsig = new RrSigRecord(
-                    DomainName.Parse("example.com") // Name of the digitally signed RRs
+                    ARSoft.Tools.Net.DomainName.Parse("example.com") // Name of the digitally signed RRs
                     , RecordClass.Any
                     , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
                          // before the query expires and a new one needs to be done.
@@ -649,7 +613,7 @@ namespace NetCoreTestApplication
                     , System.DateTime.Now // Signature Inception: When the signature was created.
                     , 0 // Key Tag: A short numeric value which can help quickly identify the DNSKEY-record which can be used to validate this signature.
                         // identifiziert den unterzeichnenden DNSKEY, um zwischen mehreren Signaturen zu unterscheiden (engl. key tag)
-                    , DomainName.Parse("example.com") // Signer's Name: Name of the DNSKEY-record which can be used to validate this signature.
+                    , ARSoft.Tools.Net.DomainName.Parse("example.com") // Signer's Name: Name of the DNSKEY-record which can be used to validate this signature.
                     , new byte[] { 1, 2, 3 } // Signature: Cryptographic signature.  (Base64)
                 );
 
@@ -665,7 +629,7 @@ namespace NetCoreTestApplication
 
 
             DsRecord dsRec = new DsRecord(
-                  DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
+                  ARSoft.Tools.Net.DomainName.Parse("example.com") // Name: It defines the hostname of a record and whether the hostname will be appended to the label. 
                                                   // Fully qualified hostnames terminated by a period will not append the origin.
                 , RecordClass.Any
                 , 60 // ttl The time-to-live in seconds. It specifies how long a resolver is supposed to cache or remember the DNS query 
