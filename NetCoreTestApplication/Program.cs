@@ -465,20 +465,13 @@ namespace NetCoreTestApplication
             // always wrong on public key
         }
 
-
-        public static void foo(byte[] ba)
-        {
-            
-        }
-        
         
         static void Main(string[] args)
         {
-            // EqualityCheck();
-            
             // PrintAlgorithms();
+            // EqualityCheck();
             // TestKeyPair();
-            
+
             // https://www.cloudflare.com/dns/dnssec/how-dnssec-works/
             // RRSIG - Contains a cryptographic signature
             // DNSKEY - Contains a public signing key
