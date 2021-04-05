@@ -27,7 +27,7 @@
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.0.0" />
     <PackageReference Include="System.Globalization.Extensions" Version="4.0.1" />
     <PackageReference Include="System.Net.NetworkInformation" Version="4.1.0" />
-    <PackageReference Include="System.Net.Security" Version="4.0.0" />
+    <PackageReference Include="System.Net.Security" Version="4.0.1" />
   </ItemGroup>
 
 </Project>
