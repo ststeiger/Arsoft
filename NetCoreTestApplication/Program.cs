@@ -465,7 +465,7 @@ namespace NetCoreTestApplication
             // always wrong on public key
         }
 
-        
+
         static void Main(string[] args)
         {
             // PrintAlgorithms();

@@ -176,6 +176,7 @@ namespace ArsoftTestServer.Data
 
             _lastChar = _current;
             _current = (char)_reader.Read();
+
             return true;
         }
 
@@ -383,8 +384,7 @@ namespace ArsoftTestServer.Data
 
         public SeparatorLineReader(ScriptSplitter splitter)
             : base(splitter)
-        {
-        }
+        { }
 
         void Reset()
         {
@@ -485,8 +485,7 @@ namespace ArsoftTestServer.Data
     {
         public SqlScriptReader(ScriptSplitter splitter)
             : base(splitter)
-        {
-        }
+        { }
 
         protected override bool ReadNext()
         {

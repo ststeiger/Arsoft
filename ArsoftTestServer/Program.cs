@@ -7,8 +7,80 @@ namespace ArsoftTestServer
     {
 
 
+        public static void TestScriptSplitting()
+        {
+            string sql = @"
+ 
+SELECT 
+     CAST(SERVERPROPERTY('ServerName') AS nvarchar(MAX)) + ' > ' + DB_NAME() AS db 
+    ,SUSER_SNAME() + N' [' + @@LANGUAGE + N']' AS usr 
+    ,SUBSTRING(@@VERSION, 1, CHARINDEX(' (', @@version)) AS SqlServer 
+    ,SERVERPROPERTY('ProductVersion') AS ProductVersion 
+    ,SERVERPROPERTY('ProductLevel') AS ProductLevel 
+    ,SERVERPROPERTY('Edition') AS Edition 
+    ,SERVERPROPERTY('BuildClrVersion') AS BuildClrVersion 
+    ,CASE WHEN EXISTS( 
+        SELECT * FROM sys.server_permissions AS what 
+        INNER JOIN sys.server_principals AS who 
+            ON who.principal_id = what.grantee_principal_id 
+        WHERE(1 = 1) 
+        AND what.permission_name = 'ALTER TRACE' 
+        AND who.name NOT LIKE '##MS%##' 
+        AND who.type_desc <> 'SERVER_ROLE' 
+        -- AND who.name IN('CORCOR_DB', 'RZCOR_PowerUser') 
+        AND who.name IN(SELECT name FROM sys.login_token WHERE principal_id > 0) 
+    ) 
+        OR EXISTS(SELECT name FROM sys.login_token WHERE principal_id > 0 AND name = 'sysadmin') 
+        THEN 1 
+        ELSE 0 
+    END AS can_trace 
+
+GO
+
+
+SELECT 
+     db.name 
+    ,db.create_date 
+    ,db.state_desc 
+    ,db.user_access_desc 
+    ,db.snapshot_isolation_state_desc 
+    ,db.recovery_model_desc 
+FROM sys.databases AS db 
+WHERE db.owner_sid <> 0x01 
+ORDER BY name 
+
+GO
+
+
+SELECT 
+     ist.TABLE_SCHEMA AS table_schema 
+    ,ist.TABLE_NAME AS table_name 
+    ,ist.go 
+FROM INFORMATION_SCHEMA.TABLES AS ist 
+WHERE ist.TABLE_TYPE = 'BASE TABLE' 
+ORDER BY table_schema, table_name 
+
+
+";
+
+
+            sql = "SELECT 1 AS a\r\nGO\r\nSELECT 2 AS b ";
+            sql = "SELECT GO\n FROM dbo.mytest ";
+
+
+            Data.ScriptSplitter allScripts = new Data.ScriptSplitter(sql);
+            foreach (string s in allScripts)
+            {
+                System.Console.WriteLine(s);
+            }
+        }
+
+
         public static void Main(string[] args)
         {
+            // TestScriptSplitting();
+            // System.Console.WriteLine("argh");
+
             // https://tools.ietf.org/html/rfc3110
 
             // https://tools.ietf.org/html/rfc2539
@@ -24,7 +96,7 @@ namespace ArsoftTestServer
             // https://bytesarena.com/dns/dnssec/2019/02/19/dnssec-keys-and-signing-explained.html
             // https://www.nic.ch/faqs/dnssec/details/
             // https://tools.ietf.org/html/rfc2535
-            
+
 
 
 
